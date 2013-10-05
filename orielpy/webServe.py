@@ -76,8 +76,8 @@ class WebInterface(object):
     config.exposed = True
 
     def configUpdate(self, http_host='0.0.0.0', http_user=None, http_port=5151, http_pass=None, http_look=None, launch_browser=0, logdir=None, 
-        cpu_info_path=None, pseudofile_folder=None, num_internal_disk_capacity=1, sys_fan_file=None, sys_fan_min=0, sys_fan_max=5000, 
-        cpu_fan_file=None, cpu_fan_min=0, cpu_fan_max=5000, cpu_temp_file=None, cpu_temp_min=0, cpu_temp_max=100, sys_temp_file=None, 
+        cpu_info_path='/proc/cpuinfo', pseudofile_folder='/sys/devices/virtual/thermal/thermal_zone0/', num_internal_disk_capacity=0, sys_fan_file=None, sys_fan_min=0, sys_fan_max=5000, 
+        cpu_fan_file=None, cpu_fan_min=0, cpu_fan_max=5000, cpu_temp_file='temp', cpu_temp_min=0, cpu_temp_max=100, sys_temp_file=None, 
         sys_temp_min=0, sys_temp_max=100, nic_read_max=200, nic_write_max=200, internal_disk_max_rate=200, external_disk_max_rate=200):
 
         orielpy.HTTP_HOST = http_host
