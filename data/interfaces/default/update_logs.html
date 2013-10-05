@@ -1,0 +1,31 @@
+<%
+    import orielpy
+    from orielpy import database   
+%>
+<div class="log_updates">
+    
+    <table>
+    	<tr>
+    		<form action="add_remove_logs" method="get">
+    		<td>Name:</td>
+    		<td><input type="text" placeholder="Program Name" name="program" size="20" maxlength="20"></td>
+    		<td>Path/To/Logfile.log:</td>
+        	<td><input type="text" placeholder="Path/To/Logfile.log" name="logpath" size="20" maxlength="255"></td>
+        	<input type="hidden" name="action" value="addlog">
+        	<td><input type="submit" value="+Logfile"></td>
+        	</form>
+    	</tr>
+    </table>
+
+	<table>
+	%for log in loglist:
+		<tr>
+			<td><form action="add_remove_logs" method="get">
+			<input type="hidden" name="action" value="removelog">
+			<input type="hidden" name="program" value="${log['program']}">
+			<input type="submit" value="Delete"></form></td>
+			<td>${log['program']}</td><td>${log['logpath']}</td></form>
+		</tr>
+	%endfor
+	</table>
+</div>

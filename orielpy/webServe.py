@@ -17,7 +17,7 @@ import orielpy
 #want to self-contain psutil in the package library, but I'm running into errors.
 import psutil
 
-from orielpy import logger
+from orielpy import logger, formatter, database
 
 
 def serve_template(templatename, **kwargs):
@@ -37,14 +37,19 @@ def serve_template(templatename, **kwargs):
 class WebInterface(object):
 
     def index(self):
-        return serve_template(templatename="base.html", title="Home")
+        raise cherrypy.HTTPRedirect("home")
     index.exposed=True
+
+    def home(self):
+        return serve_template(templatename="index.html", title="Home")
+    home.exposed=True
 
     def config(self):
         http_look_dir = os.path.join(orielpy.PROG_DIR, 'data/interfaces/')
         http_look_list = [ name for name in os.listdir(http_look_dir) if os.path.isdir(os.path.join(http_look_dir, name)) ]
 
         config = {
+                    "server_name":      orielpy.SERVER_NAME,
                     "http_host":        orielpy.HTTP_HOST,
                     "http_user":        orielpy.HTTP_USER,
                     "http_port":        orielpy.HTTP_PORT,
@@ -52,6 +57,7 @@ class WebInterface(object):
                     "http_look":        orielpy.HTTP_LOOK,
                     "http_look_list":   http_look_list,
                     "launch_browser":   int(orielpy.LAUNCH_BROWSER),
+                    "logdir":           orielpy.LOGDIR,
                     "cpu_info_path":           orielpy.CPU_INFO_PATH,
                     "pseudofile_folder":           orielpy.PSEUDOFILE_FOLDER,
                     "num_internal_disk_capacity":           int(orielpy.NUM_INTERNAL_DISK_CAPACITY),
@@ -75,11 +81,12 @@ class WebInterface(object):
         return serve_template(templatename="config.html", title="Settings", config=config)    
     config.exposed = True
 
-    def configUpdate(self, http_host='0.0.0.0', http_user=None, http_port=5151, http_pass=None, http_look=None, launch_browser=0, logdir=None, 
+    def configUpdate(self, server_name="Server", http_host='0.0.0.0', http_user=None, http_port=5151, http_pass=None, http_look=None, launch_browser=1, logdir=None, 
         cpu_info_path='/proc/cpuinfo', pseudofile_folder='/sys/devices/virtual/thermal/thermal_zone0/', num_internal_disk_capacity=0, sys_fan_file=None, sys_fan_min=0, sys_fan_max=5000, 
         cpu_fan_file=None, cpu_fan_min=0, cpu_fan_max=5000, cpu_temp_file='temp', cpu_temp_min=0, cpu_temp_max=100, sys_temp_file=None, 
         sys_temp_min=0, sys_temp_max=100, nic_read_max=200, nic_write_max=200, internal_disk_max_rate=200, external_disk_max_rate=200):
 
+        orielpy.SERVER_NAME = server_name
         orielpy.HTTP_HOST = http_host
         orielpy.HTTP_PORT = http_port
         orielpy.HTTP_USER = http_user
@@ -90,27 +97,27 @@ class WebInterface(object):
 
         orielpy.CPU_INFO_PATH = cpu_info_path
         orielpy.PSEUDOFILE_FOLDER = pseudofile_folder
-        orielpy.NUM_INTERNAL_DISK_CAPACITY = num_internal_disk_capacity
+        orielpy.NUM_INTERNAL_DISK_CAPACITY = int(num_internal_disk_capacity)
         orielpy.SYS_FAN_FILE = sys_fan_file
-        orielpy.SYS_FAN_MIN = sys_fan_min
-        orielpy.SYS_FAN_MAX = sys_fan_max
+        orielpy.SYS_FAN_MIN = int(sys_fan_min)
+        orielpy.SYS_FAN_MAX = int(sys_fan_max)
         orielpy.CPU_FAN_FILE = cpu_fan_file
-        orielpy.CPU_FAN_MIN = cpu_fan_min
-        orielpy.CPU_FAN_MAX = cpu_fan_max
+        orielpy.CPU_FAN_MIN = int(cpu_fan_min)
+        orielpy.CPU_FAN_MAX = int(cpu_fan_max)
         orielpy.CPU_TEMP_FILE = cpu_temp_file
-        orielpy.CPU_TEMP_MIN = cpu_temp_min
-        orielpy.CPU_TEMP_MAX = cpu_temp_max
+        orielpy.CPU_TEMP_MIN = int(cpu_temp_min)
+        orielpy.CPU_TEMP_MAX = int(cpu_temp_max)
         orielpy.SYS_TEMP_FILE = sys_temp_file
-        orielpy.SYS_TEMP_MIN = sys_temp_min
-        orielpy.SYS_TEMP_MAX = sys_temp_max
-        orielpy.NIC_READ_MAX = nic_read_max
-        orielpy.NIC_WRITE_MAX = nic_write_max
-        orielpy.INTERNAL_DISK_MAX_RATE = internal_disk_max_rate
-        orielpy.EXTERNAL_DISK_MAX_RATE = external_disk_max_rate
+        orielpy.SYS_TEMP_MIN = int(sys_temp_min)
+        orielpy.SYS_TEMP_MAX = int(sys_temp_max)
+        orielpy.NIC_READ_MAX = int(nic_read_max)
+        orielpy.NIC_WRITE_MAX = int(nic_write_max)
+        orielpy.INTERNAL_DISK_MAX_RATE = int(internal_disk_max_rate)
+        orielpy.EXTERNAL_DISK_MAX_RATE = int(external_disk_max_rate)
 
         orielpy.config_write()
 
-        raise cherrypy.HTTPRedirect("config")
+        raise cherrypy.HTTPRedirect("home")
 
     configUpdate.exposed = True
 
@@ -127,6 +134,10 @@ class WebInterface(object):
         message = 'restarting ...'
         return serve_template(templatename="shutdown.html", title="Restart", message=message, timer=10)
     restart.exposed = True
+
+    def update_config(self):
+        return serve_template(templatename="config.html", title="Config")
+    update_config.exposed = True
 
     def static(self):
 
@@ -627,9 +638,8 @@ class WebInterface(object):
 
         log_files = collections.defaultdict()
 
-        #NEED TO FIGURE A WAY TO READ LOG FILES FROM config.ini
-        config.read("logs.ini")
-        log_kvs = config.items("global")
+        myDB = database.DBConnection()
+        log_kvs = myDB.select('SELECT * from logpaths ORDER BY program ASC')
 
         for key, path in log_kvs:
             try:
@@ -684,3 +694,24 @@ class WebInterface(object):
 
         return "<p id=\"running_process\">"+proc_json+"</p>"
     sysprocesses.exposed=True
+
+    def update_logs(self):
+        myDB = database.DBConnection()
+        loglist = myDB.select('SELECT * from logpaths ORDER BY program ASC')
+        return serve_template(templatename="update_logs.html", title="Update Logs", loglist=loglist)
+    update_logs.exposed = True
+
+    def add_remove_logs(self, action=None, program=None, logpath=None):
+        myDB = database.DBConnection()
+
+        if action == 'addlog':
+            if len(program) !=0 and len(logpath) !=0:
+                controlValueDict = {"Program": program}
+                newValueDict = {
+                    "LogPath":   logpath
+                    }
+                myDB.upsert("logpaths", newValueDict, controlValueDict)
+        if action == 'removelog':
+            myDB.select("DELETE from logpaths WHERE Program=?", [program])
+        raise cherrypy.HTTPRedirect('home')
+    add_remove_logs.exposed = True

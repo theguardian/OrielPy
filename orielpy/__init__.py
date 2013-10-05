@@ -30,12 +30,14 @@ __INITIALIZED__ = False
 started = False
 
 DATADIR = None
+DBFILE=None
 CONFIGFILE = None
 CFG = None
 
 LOGDIR = None
 LOGLIST = []
 
+SERVER_NAME = None
 HTTP_HOST = None
 HTTP_PORT = None
 HTTP_USER = None
@@ -146,7 +148,7 @@ def initialize():
 
     with INIT_LOCK:
 
-        global __INITIALIZED__, FULL_PATH, PROG_DIR, LOGLEVEL, DAEMON, DATADIR, CONFIGFILE, CFG, LOGDIR, HTTP_HOST, HTTP_PORT, HTTP_USER, HTTP_PASS, HTTP_ROOT, HTTP_LOOK, LAUNCH_BROWSER, \
+        global __INITIALIZED__, FULL_PATH, PROG_DIR, LOGLEVEL, DAEMON, DATADIR, CONFIGFILE, CFG, LOGDIR, SERVER_NAME, HTTP_HOST, HTTP_PORT, HTTP_USER, HTTP_PASS, HTTP_ROOT, HTTP_LOOK, LAUNCH_BROWSER, \
         CPU_INFO_PATH, PSEUDOFILE_FOLDER, NUM_INTERNAL_DISK_CAPACITY, SYS_FAN_FILE, SYS_FAN_MIN, SYS_FAN_MAX, CPU_FAN_FILE, CPU_FAN_MIN, CPU_FAN_MAX, \
         CPU_TEMP_FILE, CPU_TEMP_MIN, CPU_TEMP_MAX, SYS_TEMP_FILE, SYS_TEMP_MIN, SYS_TEMP_MAX, NIC_READ_MAX, NIC_WRITE_MAX, INTERNAL_DISK_MAX_RATE, \
         EXTERNAL_DISK_MAX_RATE
@@ -165,12 +167,13 @@ def initialize():
         if HTTP_PORT < 21 or HTTP_PORT > 65535:
             HTTP_PORT = 5151
 
+        SERVER_NAME = check_setting_str(CFG, 'General', 'server_name', 'Server')
         HTTP_HOST = check_setting_str(CFG, 'General', 'http_host', '0.0.0.0')
         HTTP_USER = check_setting_str(CFG, 'General', 'http_user', '')
         HTTP_PASS = check_setting_str(CFG, 'General', 'http_pass', '')
         HTTP_ROOT = check_setting_str(CFG, 'General', 'http_root', '')
         HTTP_LOOK = check_setting_str(CFG, 'General', 'http_look', 'default')
-        LAUNCH_BROWSER = bool(check_setting_int(CFG, 'General', 'launch_browser', 0))
+        LAUNCH_BROWSER = bool(check_setting_int(CFG, 'General', 'launch_browser', 1))
         LOGDIR = check_setting_str(CFG, 'General', 'logdir', '')
 
         CPU_INFO_PATH = check_setting_str(CFG, 'Server', 'cpu_info_path', '/proc/cpuinfo')
@@ -216,6 +219,12 @@ def initialize():
 
         # Start the logger, silence console logging if we need to
         logger.orielpy_log.initLogger(loglevel=LOGLEVEL)
+
+        # Initialize the database
+        try:
+            dbcheck()
+        except Exception, e:
+            logger.error("Can't connect to the database: %s" % e)
 
         __INITIALIZED__ = True
         return True
@@ -271,6 +280,7 @@ def config_write():
     new_config.filename = CONFIGFILE
 
     new_config['General'] = {}
+    new_config['General']['server_name'] = SERVER_NAME
     new_config['General']['http_port'] = HTTP_PORT
     new_config['General']['http_host'] = HTTP_HOST
     new_config['General']['http_user'] = HTTP_USER
@@ -302,6 +312,15 @@ def config_write():
     new_config['Server']['external_disk_max_rate'] = int(EXTERNAL_DISK_MAX_RATE)
 
     new_config.write()
+
+def dbcheck():
+
+    conn=sqlite3.connect(DBFILE)
+    c=conn.cursor()
+    c.execute('CREATE TABLE IF NOT EXISTS logpaths (Program TEXT, LogPath TEXT)')
+
+    conn.commit()
+    c.close()
 
 def start():
     global __INITIALIZED__, started

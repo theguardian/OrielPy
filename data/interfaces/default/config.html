@@ -1,34 +1,93 @@
-<%!
+<%
     import orielpy
 %>
-
-    <form action="configUpdate" method="post"> 
-        <p>Broadcast Address: <input type="text" name="http_host" value="${config['http_host']}" size="20" maxlength="40"></p>
-        <p>Broadcast Port: <input type="text" name="http_port" value="${config['http_port']}" size="20" maxlength="40"></p>
-        <p>Username: <input type="text" name="http_user" value="${config['http_user']}" size="20" maxlength="40"></p>
-        <p>Password: <input type="text" name="http_pass" value="${config['http_pass']}" size="20" maxlength="40"></p>
-        <p>Theme: <input type="select" name="http_look" value="${config['http_look']}" size="20" maxlength="40"></p>
-        <p>Launch Browser: <input type="checkbox" name="launch_browser" value="${config['launch_browser']}"></p>
-        <p>CPU Info Path: <input type="text" name="cpu_info_path" value="${config['cpu_info_path']}" size="20" maxlength="40"></p>
-        <p>Pseudofile Folder: <input type="text" name="pseudofile_folder" value="${config['pseudofile_folder']}" size="20" maxlength="40"></p>
-        <p>Num. Internal Disks: <input type="text" name="num_internal_disk_capacity" value="${config['num_internal_disk_capacity']}" size="5" maxlength="2"> Disks</p>
-        <p>System Fan File: <input type="text" name="sys_fan_file" value="${config['sys_fan_file']}" size="20" maxlength="40"></p>
-        <p>System Fan Min: <input type="text" name="sys_fan_min" value="${config['sys_fan_min']}" size="5" maxlength="5"> RPM</p>
-        <p>System Fan Max: <input type="text" name="sys_fan_max" value="${config['sys_fan_max']}" size="5" maxlength="5"> RPM</p>
-        <p>CPU Fan File: <input type="text" name="cpu_fan_file" value="${config['cpu_fan_file']}" size="20" maxlength="40"></p>
-        <p>CPU Fan Min: <input type="text" name="cpu_fan_min" value="${config['cpu_fan_min']}" size="5" maxlength="5"> RPM</p>
-        <p>CPU Fan Max: <input type="text" name="cpu_fan_max" value="${config['cpu_fan_max']}" size="5" maxlength="5"> RPM</p>
-        <p>CPU Temperature File: <input type="text" name="cpu_temp_file" value="${config['cpu_temp_file']}" size="20" maxlength="40"></p>
-        <p>CPU Temperature Min: <input type="text" name="cpu_temp_min" value="${config['cpu_temp_min']}" size="3" maxlength="3"> Deg-C</p>
-        <p>CPU Temperature Max: <input type="text" name="cpu_temp_max" value="${config['cpu_temp_max']}" size="3" maxlength="3"> Deg-C</p>
-        <p>System Temperature File: <input type="text" name="sys_temp_file" value="${config['sys_temp_file']}" size="20" maxlength="40"></p>
-        <p>System Temperature Min: <input type="text" name="sys_temp_min" value="${config['sys_temp_min']}" size="3" maxlength="3"> Deg-C</p>
-        <p>System Temperature Max: <input type="text" name="sys_temp_max" value="${config['sys_temp_max']}" size="3" maxlength="3"> Deg-C</p>
-        <p>NIC Read Max: <input type="text" name="nic_read_max" value="${config['nic_read_max']}" size="3" maxlength="3"> MB/s</p>
-        <p>NIC Write Max: <input type="text" name="nic_write_max" value="${config['nic_write_max']}" size="3" maxlength="3"> MB/s</p>
-        <p>Internal Disk Rate: <input type="text" name="internal_disk_max_rate" value="${config['internal_disk_max_rate']}" size="3" maxlength="3"> MB/s</p>
-        <p>External Disk: <input type="text" name="external_disk_max_rate" value="${config['external_disk_max_rate']}" size="3" maxlength="3"> MB/s</p>
+<div class="configuration">
+    <form action="configUpdate" method="post">
+    <table>
+        <tr>
+            <td>Server Name:</td>
+            <td><input type="text" name="server_name" value="${orielpy.SERVER_NAME}" size="20" maxlength="40"></td>
+            <td>Log Directory</td>
+            <td><input type="text" name="logdir" value="${orielpy.LOGDIR}" size="20" maxlength="40"></td>
+        </tr>
+        <tr>
+            <td>Broadcast Address:</td>
+            <td><input type="text" name="http_host" value="${orielpy.HTTP_HOST}" size="15" maxlength="15"></td>
+            <td>Broadcast Port:</td>
+            <td><input type="text" name="http_port" value="${orielpy.HTTP_PORT}" size="5" maxlength="5"></td>
+        </tr>
+        <tr>
+            <td>Username:</td>
+            <td><input type="text" name="http_user" value="${orielpy.HTTP_USER}" size="20" maxlength="40"></td>
+            <td>Password:</td>
+            <td><input type="password" name="http_pass" value="${orielpy.HTTP_PASS}" size="20" maxlength="40"></td>
+        </tr>
+        <tr>
+            <td>Theme:</td>
+            <td>
+            <select name="http_look">
+                <option value="${orielpy.HTTP_LOOK}">${orielpy.HTTP_LOOK}</option>
+            </select>
+            </td>
+            <td>Launch Browser:</td>
+            <td><input type="checkbox" name="launch_browser" value=1 ${orielpy.LAUNCH_BROWSER}></td>
+        </tr>
+        <tr>
+            <td>CPU Info Path:</td>
+            <td><input type="text" name="cpu_info_path" value="${orielpy.CPU_INFO_PATH}" size="20" maxlength="40"></td>
+            <td>Pseudofile Folder:</td>
+            <td><input type="text" name="pseudofile_folder" value="${orielpy.PSEUDOFILE_FOLDER}" size="20" maxlength="40"></td>
+        </tr>
+        <tr>
+            <td>CPU Thermal File:</td>
+            <td><input type="text" name="cpu_temp_file" value="${orielpy.CPU_TEMP_FILE}" size="20" maxlength="40"></td>
+            <td>SYS Thermal File:</td>
+            <td><input type="text" name="sys_temp_file" value="${orielpy.SYS_TEMP_FILE}" size="20" maxlength="40"></td>
+        </tr>
+        <tr>
+            <td>CPU Fan File:</td>
+            <td><input type="text" name="cpu_fan_file" value="${orielpy.CPU_FAN_FILE}" size="20" maxlength="40"></td>
+            <td>SYS Fan File:</td>
+            <td><input type="text" name="sys_fan_file" value="${orielpy.SYS_FAN_FILE}" size="20" maxlength="40"></td>
+        </tr>
+        <tr>
+            <td colspan=2>
+            CPU Thermal Range: <input type="text" name="cpu_temp_min" value="${orielpy.CPU_TEMP_MIN}" size="3" maxlength="3"> - 
+            <input type="text" name="cpu_temp_max" value="${orielpy.CPU_TEMP_MAX}" size="3" maxlength="3"> Deg-C
+            </td>
+            <td colspan=2>
+            SYS Thermal Range: <input type="text" name="sys_temp_min" value="${orielpy.SYS_TEMP_MIN}" size="3" maxlength="3"> - <input type="text" name="sys_temp_max" value="${orielpy.SYS_TEMP_MAX}" size="3" maxlength="3"> Deg-C
+            </td>
+        </tr>
+        <tr>
+            <td colspan=2>
+            CPU Fan Range: <input type="text" name="cpu_fan_min" value="${orielpy.CPU_FAN_MIN}" size="5" maxlength="5"> - 
+            <input type="text" name="cpu_fan_max" value="${orielpy.CPU_FAN_MAX}" size="5" maxlength="5"> RPM
+            </td>
+            <td colspan=2>
+            SYS Fan Range: <input type="text" name="sys_fan_min" value="${orielpy.SYS_FAN_MIN}" size="5" maxlength="5"> - 
+            <input type="text" name="sys_fan_max" value="${orielpy.SYS_FAN_MAX}" size="5" maxlength="5"> RPM
+            </td>
+        </tr>
+        <tr>
+            <td>Internal Disk Rate:</td>
+            <td><input type="text" name="internal_disk_max_rate" value="${orielpy.INTERNAL_DISK_MAX_RATE}" size="3" maxlength="3"> MB/s</td>
+            <td>External Disk Rate:</td>
+            <td><input type="text" name="external_disk_max_rate" value="${orielpy.EXTERNAL_DISK_MAX_RATE}" size="3" maxlength="3"> MB/s</td>
+        </tr>
+        <tr>
+            <td>NIC Read Max:</td>
+            <td><input type="text" name="nic_read_max" value="${orielpy.NIC_READ_MAX}" size="3" maxlength="3"> MB/s</td>
+            <td>NIC Write Max:</td>
+            <td><input type="text" name="nic_write_max" value="${orielpy.NIC_WRITE_MAX}" size="3" maxlength="3"> MB/s</td>
+        </tr>
+        <tr>
+            <td>Num. Internal Disks:</td>
+            <td><input type="text" name="num_internal_disk_capacity" value="${orielpy.NUM_INTERNAL_DISK_CAPACITY}" size="5" maxlength="2"> Disks</td>
+        </tr>
+    </table>
 
     <input type="submit" value="Save Changes" />
     </form>
+</div>
 

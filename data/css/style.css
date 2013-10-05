@@ -57,6 +57,11 @@ img.unit {
 	display:inline;
 	cursor:pointer;
 }
+
+#add_rem_logs {
+	display:inline;
+	cursor:pointer;
+}
 	
 .cpu_information {
 	vertical-align:text-top;
@@ -110,6 +115,18 @@ img.unit {
 	}
 
 .process_summary {
+	margin-left:15px;
+	margin-right:15px;
+	font-size:12px;
+	}
+
+.log_updates {
+	margin-left:15px;
+	margin-right:15px;
+	font-size:12px;
+	}
+
+.configuration {
 	margin-left:15px;
 	margin-right:15px;
 	font-size:12px;
