@@ -5,7 +5,7 @@ including variants such as: QNAP appliances, RaspberryPi, etc; without the need 
 This software should be extensible to virtually any server.  
  
 # Screenshots
-![ScreenShot](https://raw.github.com/theguardian/OrielPy/master/oriel/images/screenshots/qnap_interface.jpg)
+![ScreenShot](https://raw.github.com/theguardian/OrielPy/master/data/images/screenshots/qnap_interface.jpg)
 
 ## Prerequisites
 
