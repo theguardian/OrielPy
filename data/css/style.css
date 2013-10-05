@@ -42,6 +42,21 @@ img.unit {
 	display:inline;
 	cursor:pointer;
 }
+
+#clickforconfig {
+	display:inline;
+	cursor:pointer;
+}
+
+#clickforrestart {
+	display:inline;
+	cursor:pointer;
+}
+
+#clickforshutdown {
+	display:inline;
+	cursor:pointer;
+}
 	
 .cpu_information {
 	vertical-align:text-top;

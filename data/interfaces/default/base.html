@@ -50,8 +50,14 @@
 		</div>
 	</div>
 	<div id="footer">
-		<div class="foot_left">Powered by <a href="https://github.com/theguardian/Oriel-Window" target="_new">Oriel-Window</a></div>
-		<div class="foot_right"><p id="clickforlogs">LOGS</p> | <p id="clickforprocess">PROCESSES</p></div>
+		<div class="foot_left">
+		Powered by <a href="https://github.com/theguardian/OrielPy" target="_new">OrielPy</a> ... 
+		<p id="clickforrestart">[Restart]</p> | 
+		<p id="clickforshutdown">[Shutdown]</p> | 
+		<p id="clickforconfig">[Config]</p>
+		</div>
+		<div class="foot_right"><p id="clickforlogs">LOGS</p> | <p id="clickforprocess">PROCESSES</p>
+		</div>
 	</div>
 	
 
@@ -203,6 +209,24 @@ $(document).ready(function() {
 
 	$('#clickforprocess').click(function() {
 		$("#dialog").load('interfaces/default/processes.html', function() {
+			$("#dialog").dialog("open");
+		});
+	});
+
+	$('#clickforconfig').click(function() {
+		$("#dialog").load('interfaces/default/config.html', function() {
+			$("#dialog").dialog("open");
+		});
+	});
+
+	$('#clickforrestart').click(function() {
+		$("#dialog").load('restart', function() {
+			$("#dialog").dialog("open");
+		});
+	});
+
+	$('#clickforshutdown').click(function() {
+		$("#dialog").load('shutdown', function() {
 			$("#dialog").dialog("open");
 		});
 	});

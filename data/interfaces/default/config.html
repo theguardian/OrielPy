@@ -1,19 +1,34 @@
-<%inherit file="base.html"/>
 <%!
     import orielpy
 %>
 
-<%def name="headerIncludes()">
-    <div id="subhead_container">
-        <ul id="subhead_menu">
-            <li><a href="shutdown">shutdown</a></li>
-            <li><a href="shutdown"> / </a></li>
-            <li><a href="restart">restart</a></li>
-        </ul>
-    </div>
-</%def>
-<%def name="body()">
     <form action="configUpdate" method="post"> 
-    
+        <p>Broadcast Address: <input type="text" name="http_host" value="${config['http_host']}" size="20" maxlength="40"></p>
+        <p>Broadcast Port: <input type="text" name="http_port" value="${config['http_port']}" size="20" maxlength="40"></p>
+        <p>Username: <input type="text" name="http_user" value="${config['http_user']}" size="20" maxlength="40"></p>
+        <p>Password: <input type="text" name="http_pass" value="${config['http_pass']}" size="20" maxlength="40"></p>
+        <p>Theme: <input type="select" name="http_look" value="${config['http_look']}" size="20" maxlength="40"></p>
+        <p>Launch Browser: <input type="checkbox" name="launch_browser" value="${config['launch_browser']}"></p>
+        <p>CPU Info Path: <input type="text" name="cpu_info_path" value="${config['cpu_info_path']}" size="20" maxlength="40"></p>
+        <p>Pseudofile Folder: <input type="text" name="pseudofile_folder" value="${config['pseudofile_folder']}" size="20" maxlength="40"></p>
+        <p>Num. Internal Disks: <input type="text" name="num_internal_disk_capacity" value="${config['num_internal_disk_capacity']}" size="5" maxlength="2"> Disks</p>
+        <p>System Fan File: <input type="text" name="sys_fan_file" value="${config['sys_fan_file']}" size="20" maxlength="40"></p>
+        <p>System Fan Min: <input type="text" name="sys_fan_min" value="${config['sys_fan_min']}" size="5" maxlength="5"> RPM</p>
+        <p>System Fan Max: <input type="text" name="sys_fan_max" value="${config['sys_fan_max']}" size="5" maxlength="5"> RPM</p>
+        <p>CPU Fan File: <input type="text" name="cpu_fan_file" value="${config['cpu_fan_file']}" size="20" maxlength="40"></p>
+        <p>CPU Fan Min: <input type="text" name="cpu_fan_min" value="${config['cpu_fan_min']}" size="5" maxlength="5"> RPM</p>
+        <p>CPU Fan Max: <input type="text" name="cpu_fan_max" value="${config['cpu_fan_max']}" size="5" maxlength="5"> RPM</p>
+        <p>CPU Temperature File: <input type="text" name="cpu_temp_file" value="${config['cpu_temp_file']}" size="20" maxlength="40"></p>
+        <p>CPU Temperature Min: <input type="text" name="cpu_temp_min" value="${config['cpu_temp_min']}" size="3" maxlength="3"> Deg-C</p>
+        <p>CPU Temperature Max: <input type="text" name="cpu_temp_max" value="${config['cpu_temp_max']}" size="3" maxlength="3"> Deg-C</p>
+        <p>System Temperature File: <input type="text" name="sys_temp_file" value="${config['sys_temp_file']}" size="20" maxlength="40"></p>
+        <p>System Temperature Min: <input type="text" name="sys_temp_min" value="${config['sys_temp_min']}" size="3" maxlength="3"> Deg-C</p>
+        <p>System Temperature Max: <input type="text" name="sys_temp_max" value="${config['sys_temp_max']}" size="3" maxlength="3"> Deg-C</p>
+        <p>NIC Read Max: <input type="text" name="nic_read_max" value="${config['nic_read_max']}" size="3" maxlength="3"> MB/s</p>
+        <p>NIC Write Max: <input type="text" name="nic_write_max" value="${config['nic_write_max']}" size="3" maxlength="3"> MB/s</p>
+        <p>Internal Disk Rate: <input type="text" name="internal_disk_max_rate" value="${config['internal_disk_max_rate']}" size="3" maxlength="3"> MB/s</p>
+        <p>External Disk: <input type="text" name="external_disk_max_rate" value="${config['external_disk_max_rate']}" size="3" maxlength="3"> MB/s</p>
+
+    <input type="submit" value="Save Changes" />
     </form>
-</%def>
+

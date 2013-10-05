@@ -51,7 +51,7 @@ class WebInterface(object):
                     "http_pass":        orielpy.HTTP_PASS,
                     "http_look":        orielpy.HTTP_LOOK,
                     "http_look_list":   http_look_list,
-                    "launch_browser":   checked(orielpy.LAUNCH_BROWSER),
+                    "launch_browser":   int(orielpy.LAUNCH_BROWSER),
                     "cpu_info_path":           orielpy.CPU_INFO_PATH,
                     "pseudofile_folder":           orielpy.PSEUDOFILE_FOLDER,
                     "num_internal_disk_capacity":           int(orielpy.NUM_INTERNAL_DISK_CAPACITY),
@@ -117,15 +117,15 @@ class WebInterface(object):
     def shutdown(self):
         orielpy.config_write()
         orielpy.SIGNAL = 'shutdown'
-        message = 'closing ...'
-        return serve_template(templatename="shutdown.html", title="Close library", message=message, timer=15)
+        message = 'shutting down ...'
+        return serve_template(templatename="shutdown.html", title="Exit", message=message, timer=10)
         return page
     shutdown.exposed = True
 
     def restart(self):
         orielpy.SIGNAL = 'restart'
-        message = 'reopening ...'
-        return serve_template(templatename="shutdown.html", title="Reopen library", message=message, timer=30)
+        message = 'restarting ...'
+        return serve_template(templatename="shutdown.html", title="Restart", message=message, timer=10)
     restart.exposed = True
 
     def static(self):
