@@ -1,0 +1,25 @@
+<div class="log_summary">
+</div>
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+	setInterval(function() {	
+		$('.invisible').load('syslogs', function(){
+			var log_files = $('#log_files').html();
+			log_files_json = JSON.parse(log_files);
+			var entry;
+			var name;
+			var count;
+			entry = log_files_json[0];
+			$('.log_summary').html('');
+			count = 0;
+			for (name in entry) {
+				$('.log_summary').append('<p>'+name+': '+entry[name]+'</p>');
+				++count;
+			}
+		});
+	}, 2000); 
+
+});
+</script>

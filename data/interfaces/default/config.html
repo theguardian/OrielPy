@@ -1,0 +1,19 @@
+<%inherit file="base.html"/>
+<%!
+    import orielpy
+%>
+
+<%def name="headerIncludes()">
+    <div id="subhead_container">
+        <ul id="subhead_menu">
+            <li><a href="shutdown">shutdown</a></li>
+            <li><a href="shutdown"> / </a></li>
+            <li><a href="restart">restart</a></li>
+        </ul>
+    </div>
+</%def>
+<%def name="body()">
+    <form action="configUpdate" method="post"> 
+    
+    </form>
+</%def>
