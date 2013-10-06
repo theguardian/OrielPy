@@ -5,7 +5,7 @@ cache.db*
 orielpy.db
 config.ini
 Logs/*
-data/images/server.png
+*server.png
 
 #  Compiled source   #
 ######################
