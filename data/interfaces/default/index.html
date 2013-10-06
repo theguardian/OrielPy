@@ -182,7 +182,7 @@ $(document).ready(function() {
 
 	$("#dialog").dialog({
 			autoOpen: false,
-			position: 'center' ,
+			position: ['top' , 100],
 			title: 'Latest Activity',
 			draggable: false,
 			resizable : false,
@@ -192,36 +192,42 @@ $(document).ready(function() {
 	
 	$('#clickforlogs').click(function() {
 		$("#dialog").load('interfaces/default/logs.html', function() {
+			$("#dialog").dialog("option", "title", "MONITOR LOG FILES");
 			$("#dialog").dialog("open");
 		});
 	});
 
 	$('#clickforprocess').click(function() {
 		$("#dialog").load('interfaces/default/processes.html', function() {
+			$("#dialog").dialog("option", "title", "ACTIVE PROCESSES");
 			$("#dialog").dialog("open");
 		});
 	});
 
 	$('#clickforconfig').click(function() {
 		$("#dialog").load('update_config', function() {
+			$("#dialog").dialog("option", "title", "ORIELPY CONFIGURATION");
 			$("#dialog").dialog("open");
 		});
 	});
 
 	$('#add_rem_logs').click(function() {
 		$("#dialog").load('update_logs', function() {
+			$("#dialog").dialog("option", "title", "CONFIGURE LOG FILES");
 			$("#dialog").dialog("open");
 		});
 	});
 
 	$('#clickforrestart').click(function() {
 		$("#dialog").load('restart', function() {
+			$("#dialog").dialog("option", "title", "RESTART");
 			$("#dialog").dialog("open");
 		});
 	});
 
 	$('#clickforshutdown').click(function() {
 		$("#dialog").load('shutdown', function() {
+			$("#dialog").dialog("option", "title", "SHUTDOWN");
 			$("#dialog").dialog("open");
 		});
 	});
