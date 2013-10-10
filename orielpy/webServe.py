@@ -14,8 +14,7 @@ import decimal
 import re
 
 import orielpy
-#want to self-contain psutil in the package library, but I'm running into errors.
-import psutil
+import lib.psutil as psutil
 
 from orielpy import logger, formatter, database
 
