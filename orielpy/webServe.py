@@ -14,7 +14,7 @@ import decimal
 import re
 
 import orielpy
-import lib.psutil as psutil
+import psutil
 
 from orielpy import logger, formatter, database
 

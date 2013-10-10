@@ -33,18 +33,16 @@ __extra__all__ = [
     "CONN_ESTABLISHED", "CONN_SYN_SENT", "CONN_SYN_RECV", "CONN_FIN_WAIT1",
     "CONN_FIN_WAIT2", "CONN_TIME_WAIT", "CONN_CLOSE", "CONN_CLOSE_WAIT",
     "CONN_LAST_ACK", "CONN_LISTEN", "CONN_CLOSING",
-    # process resources constants
-    "RLIM_INFINITY", "RLIMIT_AS", "RLIMIT_CORE", "RLIMIT_CPU", "RLIMIT_DATA",
-    "RLIMIT_FSIZE", "RLIMIT_LOCKS", "RLIMIT_MEMLOCK", "RLIMIT_NOFILE",
-    "RLIMIT_NPROC", "RLIMIT_RSS", "RLIMIT_STACK",
     # other
     "phymem_buffers", "cached_phymem"]
 
-# these are not guaranteed to be present on all kernels
-for name in ("RLIMIT_MSGQUEUE", "RLIMIT_NICE", "RLIMIT_RTPRIO",
-             "RLIMIT_RTTIME", "RLIMIT_SIGPENDING"):
-    if hasattr(_psutil_linux, name):
-        __extra__all__.append(name)
+HAS_PRLIMIT = hasattr(_psutil_linux, "prlimit")
+
+# RLIMIT_* constants, not guaranteed to be present on all kernels
+if HAS_PRLIMIT:
+    for name in dir(_psutil_linux):
+        if name.startswith('RLIM'):
+            __extra__all__.append(name)
 
 def get_system_boot_time():
     """Return the system boot time expressed in seconds since the epoch."""
@@ -57,7 +55,7 @@ def get_system_boot_time():
     finally:
         f.close()
 
-def _get_num_cpus():
+def get_num_cpus():
     """Return the number of CPUs on the system"""
     try:
         return os.sysconf("SC_NPROCESSORS_ONLN")
@@ -107,7 +105,7 @@ except Exception:
     BOOT_TIME = None
     warnings.warn("couldn't determine platform's BOOT_TIME", RuntimeWarning)
 try:
-    NUM_CPUS = _get_num_cpus()
+    NUM_CPUS = get_num_cpus()
 except Exception:
     NUM_CPUS = None
     warnings.warn("couldn't determine platform's NUM_CPUS", RuntimeWarning)
@@ -857,17 +855,18 @@ class Process(object):
                 raise ValueError("value argument range expected is between 0 and 8")
             return _psutil_linux.ioprio_set(self.pid, ioclass, value)
 
-    @wrap_exceptions
-    def process_rlimit(self, resource, limits=None):
-        if limits is None:
-            # get
-            return _psutil_linux.prlimit(self.pid, resource)
-        else:
-            # set
-            if len(limits) != 2:
-                raise ValueError("second argument must be a (soft, hard) tuple")
-            soft, hard = limits
-            _psutil_linux.prlimit(self.pid, resource, soft, hard)
+    if HAS_PRLIMIT:
+        @wrap_exceptions
+        def process_rlimit(self, resource, limits=None):
+            if limits is None:
+                # get
+                return _psutil_linux.prlimit(self.pid, resource)
+            else:
+                # set
+                if len(limits) != 2:
+                    raise ValueError("second argument must be a (soft, hard) tuple")
+                soft, hard = limits
+                _psutil_linux.prlimit(self.pid, resource, soft, hard)
 
     @wrap_exceptions
     def get_process_status(self):
@@ -876,9 +875,9 @@ class Process(object):
             for line in f:
                 if line.startswith("State:"):
                     letter = line.split()[1]
-                    if letter in _status_map:
-                        return _status_map[letter]
-                    return constant(-1, '?')
+                    # XXX is '?' legit? (we're not supposed to return
+                    # it anyway)
+                    return _status_map.get(letter, '?')
         finally:
             f.close()
 
@@ -1031,7 +1030,7 @@ class Process(object):
 
     @wrap_exceptions
     def get_num_fds(self):
-       return len(os.listdir("/proc/%s/fd" % self.pid))
+        return len(os.listdir("/proc/%s/fd" % self.pid))
 
     @wrap_exceptions
     def get_process_ppid(self):

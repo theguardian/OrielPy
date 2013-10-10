@@ -12,7 +12,7 @@ Python.
 
 from __future__ import division
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 version_info = tuple([int(num) for num in __version__.split('.')])
 
 __all__ = [
@@ -52,41 +52,85 @@ except ImportError:
 
 from psutil._error import Error, NoSuchProcess, AccessDenied, TimeoutExpired
 from psutil._common import cached_property
-from psutil._compat import (property, callable, defaultdict, namedtuple,
-                            wraps as _wraps, PY3 as _PY3)
+from psutil._compat import property, callable, defaultdict, namedtuple
+from psutil._compat import (wraps as _wraps,
+                            PY3 as _PY3)
 from psutil._common import (deprecated as _deprecated,
                             nt_disk_iostat as _nt_disk_iostat,
                             nt_net_iostat as _nt_net_iostat,
                             nt_sysmeminfo as _nt_sysmeminfo,
                             isfile_strict as _isfile_strict)
-from psutil._common import (STATUS_RUNNING, STATUS_IDLE, STATUS_SLEEPING,
-                            STATUS_DISK_SLEEP, STATUS_STOPPED,
-                            STATUS_TRACING_STOP, STATUS_ZOMBIE, STATUS_DEAD,
-                            STATUS_WAKING, STATUS_LOCKED,
-                            #
-                            CONN_ESTABLISHED, CONN_SYN_SENT, CONN_SYN_RECV,
-                            CONN_FIN_WAIT1, CONN_FIN_WAIT2, CONN_TIME_WAIT,
-                            CONN_CLOSE, CONN_CLOSE_WAIT, CONN_LAST_ACK,
-                            CONN_LISTEN, CONN_CLOSING, CONN_NONE)
 
-# import the appropriate module for our platform only
+from psutil._common import (STATUS_RUNNING,
+                            STATUS_IDLE,
+                            STATUS_SLEEPING,
+                            STATUS_DISK_SLEEP,
+                            STATUS_STOPPED,
+                            STATUS_TRACING_STOP,
+                            STATUS_ZOMBIE,
+                            STATUS_DEAD,
+                            STATUS_WAKING,
+                            STATUS_LOCKED)
+
+from psutil._common import (CONN_ESTABLISHED,
+                            CONN_SYN_SENT,
+                            CONN_SYN_RECV,
+                            CONN_FIN_WAIT1,
+                            CONN_FIN_WAIT2,
+                            CONN_TIME_WAIT,
+                            CONN_CLOSE,
+                            CONN_CLOSE_WAIT,
+                            CONN_LAST_ACK,
+                            CONN_LISTEN,
+                            CONN_CLOSING,
+                            CONN_NONE)
+
 if sys.platform.startswith("linux"):
     import psutil._pslinux as _psplatform
     from psutil._pslinux import (phymem_buffers,
-                                 cached_phymem,
-                                 IOPRIO_CLASS_NONE,
+                                 cached_phymem)
+
+    from psutil._pslinux import (IOPRIO_CLASS_NONE,
                                  IOPRIO_CLASS_RT,
                                  IOPRIO_CLASS_BE,
-                                 IOPRIO_CLASS_IDLE,
-                                 RLIM_INFINITY,
-                                 RLIMIT_AS, RLIMIT_CORE, RLIMIT_CPU,
-                                 RLIMIT_DATA, RLIMIT_FSIZE, RLIMIT_LOCKS,
-                                 RLIMIT_MEMLOCK, RLIMIT_MSGQUEUE, RLIMIT_NICE,
-                                 RLIMIT_NOFILE, RLIMIT_NPROC, RLIMIT_RSS,
-                                 RLIMIT_RTPRIO, RLIMIT_RTTIME,
-                                 RLIMIT_SIGPENDING, RLIMIT_STACK)
-    phymem_buffers = _psplatform.phymem_buffers
-    cached_phymem = _psplatform.cached_phymem
+                                 IOPRIO_CLASS_IDLE)
+    # Linux >= 2.6.36
+    if _psplatform.HAS_PRLIMIT:
+        from psutil._pslinux import (RLIM_INFINITY,
+                                     RLIMIT_AS,
+                                     RLIMIT_CORE,
+                                     RLIMIT_CPU,
+                                     RLIMIT_DATA,
+                                     RLIMIT_FSIZE,
+                                     RLIMIT_LOCKS,
+                                     RLIMIT_MEMLOCK,
+                                     RLIMIT_NOFILE,
+                                     RLIMIT_NPROC,
+                                     RLIMIT_RSS,
+                                     RLIMIT_STACK)
+        # Kinda ugly but considerably faster than using hasattr() and
+        # setattr() against the module object (we are at import time
+        # and we demand speed).
+        try:
+            RLIMIT_MSGQUEUE = _psplatform.RLIMIT_MSGQUEUE
+        except AttributeError:
+            pass
+        try:
+            RLIMIT_NICE = _psplatform.RLIMIT_NICE
+        except AttributeError:
+            pass
+        try:
+            RLIMIT_RTPRIO = _psplatform.RLIMIT_RTPRIO
+        except AttributeError:
+            pass
+        try:
+            RLIMIT_RTTIME = _psplatform.RLIMIT_RTTIME
+        except AttributeError:
+            pass
+        try:
+            RLIMIT_SIGPENDING = _psplatform.RLIMIT_SIGPENDING
+        except AttributeError:
+            pass
 
 elif sys.platform.startswith("win32"):
     import psutil._psmswindows as _psplatform
@@ -866,6 +910,12 @@ class Process(object):
     def wait(self, timeout=None):
         """Wait for process to terminate and, if process is a children
         of the current one also return its exit code, else None.
+
+        If the process is already terminated immediately return None
+        instead of raising NoSuchProcess.
+
+        If timeout (in seconds) is specified and process is still alive
+        after the timeout expired raise TimeoutExpired.
         """
         if timeout is not None and not timeout >= 0:
             raise ValueError("timeout must be a positive integer")
