@@ -29,9 +29,11 @@ is based on Oriel-Window and ported for the CherryPy framework.
 
 ## Use
 
-1.) Git clone onto your Linux Server
-2.) CD into OrielPy
-3.) >> python OrielPy.py
+1. Git clone onto your Linux Server
+2. cd into OrielPy
+3. >> python OrielPy.py
+4. Go to http://your.ip.address:5151
+5. Click "restart" to run as daemon
 
 ## Disclaimers
 
