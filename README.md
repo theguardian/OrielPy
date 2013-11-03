@@ -26,14 +26,19 @@ is based on Oriel-Window and ported for the CherryPy framework.
 ## Prerequisites
 1. Currently works on Linux systems with Python installed
 2. Requires installation of psutil (https://code.google.com/p/psutil/)
+* Note that psutil package required is NOT the same as apt-get repository "psutils". Right now, psutil must be downloaded and installed manually with "python setup.py install"
+* If installation of psutil results in "error: command 'gcc' failed with exit status 1", you also need to install python development headers with "sudo apt-get install python-dev"
 
 ## Use
-
 1. Git clone onto your Linux Server
 2. cd into OrielPy
 3. >> python OrielPy.py
 4. Go to http://your.ip.address:5151
-5. Click "restart" to run as daemon
+
+## Advanced Use
+1. Click "restart" to run as daemon
+2. Click "config" to configure specifics for your particular system (pseudofiles, ranges, etc)
+3. Click [+/-] to configure log files you would like to monitor
 
 ## Disclaimers
 
