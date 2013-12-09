@@ -9,7 +9,7 @@ from lib.apscheduler.scheduler import Scheduler
 
 import threading
 
-from orielpy import logger
+from orielpy import logger, generator
 
 FULL_PATH = None
 PROG_DIR = None
@@ -45,6 +45,8 @@ HTTP_PASS = None
 HTTP_ROOT = None
 HTTP_LOOK = None
 LAUNCH_BROWSER = False
+NOTIFICATION_FREQUENCY = 0
+NOTIFICATION_UNITS = None
 
 CPU_INFO_PATH = None
 PSEUDOFILE_FOLDER = None
@@ -65,6 +67,11 @@ NIC_READ_MAX = None
 NIC_WRITE_MAX = None
 INTERNAL_DISK_MAX_RATE = None
 EXTERNAL_DISK_MAX_RATE = None
+
+USE_TWITTER = False
+TWITTER_USERNAME = None
+TWITTER_PASSWORD = None
+TWITTER_PREFIX = 'OrielPy'
 
 
 def CheckSection(sec):
@@ -151,13 +158,14 @@ def initialize():
         global __INITIALIZED__, FULL_PATH, PROG_DIR, LOGLEVEL, DAEMON, DATADIR, CONFIGFILE, CFG, LOGDIR, SERVER_NAME, HTTP_HOST, HTTP_PORT, HTTP_USER, HTTP_PASS, HTTP_ROOT, HTTP_LOOK, LAUNCH_BROWSER, \
         CPU_INFO_PATH, PSEUDOFILE_FOLDER, NUM_INTERNAL_DISK_CAPACITY, SYS_FAN_FILE, SYS_FAN_MIN, SYS_FAN_MAX, CPU_FAN_FILE, CPU_FAN_MIN, CPU_FAN_MAX, \
         CPU_TEMP_FILE, CPU_TEMP_MIN, CPU_TEMP_MAX, SYS_TEMP_FILE, SYS_TEMP_MIN, SYS_TEMP_MAX, NIC_READ_MAX, NIC_WRITE_MAX, INTERNAL_DISK_MAX_RATE, \
-        EXTERNAL_DISK_MAX_RATE
+        EXTERNAL_DISK_MAX_RATE, USE_TWITTER, TWITTER_USERNAME, TWITTER_PASSWORD, TWITTER_PREFIX, NOTIFICATION_FREQUENCY, NOTIFICATION_UNITS
 
         if __INITIALIZED__:
             return False
 
         CheckSection('General')
         CheckSection('Server')
+        CheckSection('Twitter')
 
         try:
             HTTP_PORT = check_setting_int(CFG, 'General', 'http_port', 5151)
@@ -175,6 +183,8 @@ def initialize():
         HTTP_LOOK = check_setting_str(CFG, 'General', 'http_look', 'default')
         LAUNCH_BROWSER = bool(check_setting_int(CFG, 'General', 'launch_browser', 1))
         LOGDIR = check_setting_str(CFG, 'General', 'logdir', '')
+        NOTIFICATION_FREQUENCY = int(check_setting_int(CFG, 'General', 'notification_frequency', 0))
+        NOTIFICATION_UNITS = check_setting_str(CFG, 'General', 'notification_units', '')
 
         CPU_INFO_PATH = check_setting_str(CFG, 'Server', 'cpu_info_path', '/proc/cpuinfo')
         PSEUDOFILE_FOLDER = check_setting_str(CFG, 'Server', 'pseudofile_folder', '/sys/devices/virtual/thermal/thermal_zone0/')
@@ -195,6 +205,11 @@ def initialize():
         NIC_WRITE_MAX = int(check_setting_str(CFG, 'Server', 'nic_write_max', '200'))
         INTERNAL_DISK_MAX_RATE = int(check_setting_str(CFG, 'Server', 'internal_disk_max_rate', '200'))
         EXTERNAL_DISK_MAX_RATE = int(check_setting_str(CFG, 'Server', 'external_disk_max_rate', '200'))
+
+        USE_TWITTER = bool(check_setting_int(CFG, 'Twitter', 'use_twitter', 0))
+        TWITTER_USERNAME = check_setting_str(CFG, 'Twitter', 'twitter_username', '')
+        TWITTER_PASSWORD = check_setting_str(CFG, 'Twitter', 'twitter_password', '')
+        TWITTER_PREFIX = check_setting_str(CFG, 'Twitter', 'twitter_prefix', 'OrielPy')
 
  
         if not LOGDIR:
@@ -289,6 +304,8 @@ def config_write():
     new_config['General']['http_look'] = HTTP_LOOK
     new_config['General']['launch_browser'] = int(LAUNCH_BROWSER)
     new_config['General']['logdir'] = LOGDIR
+    new_config['General']['notification_frequency'] = int(NOTIFICATION_FREQUENCY)
+    new_config['General']['notification_units'] = NOTIFICATION_UNITS
 
     new_config['Server'] = {}
     new_config['Server']['cpu_info_path'] = CPU_INFO_PATH
@@ -311,6 +328,12 @@ def config_write():
     new_config['Server']['internal_disk_max_rate'] = int(INTERNAL_DISK_MAX_RATE)
     new_config['Server']['external_disk_max_rate'] = int(EXTERNAL_DISK_MAX_RATE)
 
+    new_config['Twitter'] = {}
+    new_config['Twitter']['use_twitter'] = int(USE_TWITTER)
+    new_config['Twitter']['twitter_username'] = TWITTER_USERNAME
+    new_config['Twitter']['twitter_password'] = TWITTER_PASSWORD
+    new_config['Twitter']['twitter_prefix'] = TWITTER_PREFIX
+
     new_config.write()
 
 def dbcheck():
@@ -318,6 +341,7 @@ def dbcheck():
     conn=sqlite3.connect(DBFILE)
     c=conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS logpaths (Program TEXT, LogPath TEXT)')
+    c.execute('CREATE TABLE IF NOT EXISTS rules (id_num INTEGER, rule1 TEXT, rule2 TEXT, rule3 TEXT, rule4 TEXT, rule5 TEXT, rule6 TEXT, rule7 TEXT)')
 
     conn.commit()
     c.close()
@@ -329,7 +353,10 @@ def start():
 
         # Crons and scheduled jobs go here
         starttime = datetime.datetime.now()
-        #SCHED.add_interval_job(postprocess.processDir, minutes=SCAN_INTERVAL, start_date=starttime+datetime.timedelta(minutes=1))
+        if NOTIFICATION_UNITS == "hours" and NOTIFICATION_FREQUENCY != 0:
+            SCHED.add_interval_job(generator.generateTweet, hours=NOTIFICATION_FREQUENCY)
+        elif NOTIFICATION_UNITS == "minutes" and NOTIFICATION_FREQUENCY !=0:
+            SCHED.add_interval_job(generator.generateTweet, minutes=NOTIFICATION_FREQUENCY)
         #SCHED.add_interval_job(searchnzb.searchbook, minutes=SEARCH_INTERVAL, start_date=starttime+datetime.timedelta(minutes=2))
 
         SCHED.start()

@@ -1,9 +1,7 @@
 html, body { 
 	margin:0; 
-	padding:0; 
+	padding:0;
 	height:100%;
-	width:100%;
-	overflow:hidden;
 	background-color:#000000;
 } 
 
@@ -13,12 +11,11 @@ html, body {
     min-height: 100%;
     margin-left:auto;
     margin-right:auto;
-    margin-top:0px;
-    margin-bottom:0px;
 }
 
 #content {
-    height:100%;
+    padding-bottom:35px;
+    font-size:12px;
 }
 
 #fileserver {
@@ -58,54 +55,114 @@ img.unit {
 	cursor:pointer;
 }
 
+#clickfornotify {
+	display:inline;
+	cursor:pointer;
+}
+
 #add_rem_logs {
 	display:inline;
 	cursor:pointer;
 }
+
+#add_rem_rules {
+	display:inline;
+	cursor:pointer;
+}
+
+#general_header {
+	display:inline;
+	cursor:pointer;
+	font-size:16px;
+	font-weight:bold;
+}
+
+#server_header {
+	display:inline;
+	cursor:pointer;
+	font-size:16px;
+	font-weight:bold;
+}
+
+#twitter_header {
+	display:inline;
+	cursor:pointer;
+	font-size:16px;
+	font-weight:bold;
+}
+
+#notifications_header {
+	display:inline;
+	cursor:pointer;
+	font-size:16px;
+	font-weight:bold;
+}
+
+#logs_header {
+	display:inline;
+	cursor:pointer;
+	font-size:16px;
+	font-weight:bold;
+}
+
+#restart_header {
+	display:inline;
+	cursor:pointer;
+	font-size:16px;
+	font-weight:bold;
+}
+
+#shutdown_header {
+	display:inline;
+	cursor:pointer;
+	font-size:16px;
+	font-weight:bold;
+}
 	
 .cpu_information {
 	vertical-align:text-top;
+	font-size:16px;
 	}
 
 .disk_summary {
 	vertical-align:text-top;
 	width:220px;
-	font-size:12px;
+	
 	}
 
 .network {
 	vertical-align:text-top;
-	font-size:12px;
+	
 	}
 	
 .ext_summary {
 	vertical-align:text-top;
 	width:220px;
-	font-size:12px;
+	
 	}
 	
 .cpu_info {
-	font-size:12px;
+	
 	}
 	
 .ram_info {
-	font-size:12px;
+	
 	}
 	
 .swap_info {
-	font-size:12px;
+	
 	}
 	
 .hd_info {
-	font-size:12px;
+	
 	}
 	
 .fans_temps_info {
-	font-size:12px;
+	
 	}
 
 .networking_info {
-	font-size:12px;
+	
 	}
 
 .log_summary {
@@ -121,6 +178,12 @@ img.unit {
 	}
 
 .log_updates {
+	margin-left:15px;
+	margin-right:15px;
+	font-size:12px;
+	}
+
+.rules_updates {
 	margin-left:15px;
 	margin-right:15px;
 	font-size:12px;
@@ -169,11 +232,12 @@ p.name-right-corrected {
 	}
 
 #footer {
-	height:30px;
+	height:25px;
+	margin-bottom:10px;
 	position:absolute;
 	bottom:0;
 	width:100%;
-	border:1px solid #ffffff;
+	border-top:1px solid #ffffff;
 	color: #ffffff;
 }
 
@@ -191,7 +255,6 @@ p.name-right-corrected {
 	
 .foot_right {
 	position:absolute;
-	bottom:10px;
 	right:15px;
 	text-align: right;
 	display: inline;

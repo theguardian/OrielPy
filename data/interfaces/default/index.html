@@ -26,15 +26,15 @@
 
 				<div class="cpu_info">
 				</div>
+				<div class="fans_temps_info">
+				</div>
 				<div class="ram_info">
 				</div>
 				<div class="swap_info">
 				</div>
-				<div class="fans_temps_info">
+				<div class="hd_info">
 				</div>
 				<div class="networking_info">
-				</div>
-				<div class="hd_info">
 				</div>
 		</div>
 	</div>
@@ -43,16 +43,14 @@
 		Powered by <a href="https://github.com/theguardian/OrielPy" target="_new">OrielPy</a> ... 
 		<p id="clickforrestart">[Restart]</p> | 
 		<p id="clickforshutdown">[Shutdown]</p> | 
-		<p id="clickforconfig">[Config]</p>
+		<p id="clickforconfig">[Configuration]</p>
 		</div>
-		<div class="foot_right"><p id="clickforlogs">LOGS</p> <p id="add_rem_logs">[+/-]</p> | <p id="clickforprocess">PROCESSES</p>
+		<div class="foot_right"><p id="clickforlogs">LOGS</p> | <p id="clickforprocess">PROCESSES</p>
 		</div>
 	</div>
 	
-
 </div>
 <div id="dialog"></div>
-
 
 <script type="text/javascript">
 $(document).ready(function() {
@@ -211,13 +209,6 @@ $(document).ready(function() {
 		});
 	});
 
-	$('#add_rem_logs').click(function() {
-		$("#dialog").load('update_logs', function() {
-			$("#dialog").dialog("option", "title", "CONFIGURE LOG FILES");
-			$("#dialog").dialog("open");
-		});
-	});
-
 	$('#clickforrestart').click(function() {
 		$("#dialog").load('restart', function() {
 			$("#dialog").dialog("option", "title", "RESTART");
@@ -231,6 +222,7 @@ $(document).ready(function() {
 			$("#dialog").dialog("open");
 		});
 	});
+
 
 });
 </script>

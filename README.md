@@ -2,7 +2,8 @@
 
 This program shows "at-a-glance" hardware and system information for your Linux server through any web browser, 
 including variants such as: QNAP appliances, RaspberryPi, etc; without the need to login to terminal.  OrielPy
-is based on Oriel-Window and ported for the CherryPy framework.
+is based on Oriel-Window and ported for the CherryPy framework.  It now has the ability to send a tweet if
+the server is experiencing user-defined off-nominal conditions.
  
 # Screenshots
 ![ScreenShot](https://raw.github.com/theguardian/OrielPy/master/data/images/screenshots/qnap_interface.jpg)
@@ -22,6 +23,7 @@ is based on Oriel-Window and ported for the CherryPy framework.
 11. Disk Per-Volume Memory (Format / Free / Total)
 12. Monitor Actively Running Processes
 13. Monitor User-Defined Log Files
+14. [Optional] Tweet messages regarding off-nominal performance on a set schedule
 
 ## Prerequisites
 1. Currently works on Linux systems with Python installed
@@ -37,8 +39,7 @@ is based on Oriel-Window and ported for the CherryPy framework.
 
 ## Advanced Use
 1. Click "restart" to run as daemon
-2. Click "config" to configure specifics for your particular system (pseudofiles, ranges, etc)
-3. Click [+/-] to configure log files you would like to monitor
+2. Click "Configuration" to configure specifics for your particular system (pseudofiles, ranges, log files, etc)
 
 ## Disclaimers
 

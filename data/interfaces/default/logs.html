@@ -13,11 +13,13 @@ $(document).ready(function() {
 			var count;
 			entry = log_files_json[0];
 			$('.log_summary').html('');
+			$('.log_summary').append('<table width="100%">');
 			count = 0;
 			for (name in entry) {
-				$('.log_summary').append('<p>'+name+': '+entry[name]+'</p>');
+				$('.log_summary').append('<tr><td>'+name+': </td><td>'+entry[name]+'</td></tr>');
 				++count;
 			}
+			$('.log_summary').append('</table>');
 		});
 	}, 2000); 
 
