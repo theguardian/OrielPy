@@ -9,6 +9,7 @@ import re
 import time
 
 from orielpy import database
+from operator import itemgetter
 
 class subroutines:
 
@@ -260,6 +261,9 @@ class subroutines:
             ext_final_list.append(ext_tot_list)
             keep_count +=1
 
+        int_final_list = sorted(int_final_list, key=itemgetter('disk_id'))
+        ext_final_list = sorted(ext_final_list, key=itemgetter('disk_id'))
+
         disk_json = json.dumps(int_final_list)
         ext_json = json.dumps(ext_final_list)
 
@@ -438,7 +442,9 @@ class subroutines:
                 partition_array['percent'] = disk_percent
             
                 partition_list.append(partition_array)
-            partition_index +=1     
+            partition_index +=1
+
+        partition_list = sorted(partition_list, key=itemgetter('mountpoint'))
         partition_json = json.dumps(partition_list)
 
         #=====================================================
