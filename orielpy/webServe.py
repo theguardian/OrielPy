@@ -51,6 +51,7 @@ class WebInterface(object):
                     "logdir":           orielpy.LOGDIR,
                     "notification_frequency":   orielpy.NOTIFICATION_FREQUENCY,
                     "notification_units":   orielpy.NOTIFICATION_UNITS,
+                    "notify_nominal":   orielpy.NOTIFY_NOMINAL,
                     "cpu_info_path":           orielpy.CPU_INFO_PATH,
                     "pseudofile_folder":           orielpy.PSEUDOFILE_FOLDER,
                     "num_internal_disk_capacity":           int(orielpy.NUM_INTERNAL_DISK_CAPACITY),
@@ -79,7 +80,17 @@ class WebInterface(object):
     config.exposed = True
 
     def generalUpdate(self, server_name="Server", http_host='0.0.0.0', http_user=None, http_port=5151, http_pass=None, http_look=None, launch_browser=1, logdir=None, 
-        notification_frequency=0, notification_units='Hours'):
+        notification_frequency=0, notification_units='Hours', notify_nominal=1):
+
+        if launch_browser == "on":
+            launch_browser = 1
+        else:
+            launch_browser = 0
+
+        if notify_nominal == "on":
+            notify_nominal = 1
+        else:
+            notify_nominal = 0
 
         orielpy.SERVER_NAME = server_name
         orielpy.HTTP_HOST = http_host
@@ -91,6 +102,7 @@ class WebInterface(object):
         orielpy.LOGDIR = logdir
         orielpy.NOTIFICATION_FREQUENCY = int(notification_frequency)
         orielpy.NOTIFICATION_UNITS = notification_units
+        orielpy.NOTIFY_NOMINAL = notify_nominal
 
         orielpy.config_write()
 

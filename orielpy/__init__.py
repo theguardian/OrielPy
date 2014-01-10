@@ -47,6 +47,7 @@ HTTP_LOOK = None
 LAUNCH_BROWSER = False
 NOTIFICATION_FREQUENCY = 0
 NOTIFICATION_UNITS = None
+NOTIFY_NOMINAL = False
 
 CPU_INFO_PATH = None
 PSEUDOFILE_FOLDER = None
@@ -156,7 +157,7 @@ def initialize():
     with INIT_LOCK:
 
         global __INITIALIZED__, FULL_PATH, PROG_DIR, LOGLEVEL, DAEMON, DATADIR, CONFIGFILE, CFG, LOGDIR, SERVER_NAME, HTTP_HOST, HTTP_PORT, HTTP_USER, HTTP_PASS, HTTP_ROOT, HTTP_LOOK, LAUNCH_BROWSER, \
-        CPU_INFO_PATH, PSEUDOFILE_FOLDER, NUM_INTERNAL_DISK_CAPACITY, SYS_FAN_FILE, SYS_FAN_MIN, SYS_FAN_MAX, CPU_FAN_FILE, CPU_FAN_MIN, CPU_FAN_MAX, \
+        NOTIFY_NOMINAL, CPU_INFO_PATH, PSEUDOFILE_FOLDER, NUM_INTERNAL_DISK_CAPACITY, SYS_FAN_FILE, SYS_FAN_MIN, SYS_FAN_MAX, CPU_FAN_FILE, CPU_FAN_MIN, CPU_FAN_MAX, \
         CPU_TEMP_FILE, CPU_TEMP_MIN, CPU_TEMP_MAX, SYS_TEMP_FILE, SYS_TEMP_MIN, SYS_TEMP_MAX, NIC_READ_MAX, NIC_WRITE_MAX, INTERNAL_DISK_MAX_RATE, \
         EXTERNAL_DISK_MAX_RATE, USE_TWITTER, TWITTER_USERNAME, TWITTER_PASSWORD, TWITTER_PREFIX, NOTIFICATION_FREQUENCY, NOTIFICATION_UNITS
 
@@ -185,6 +186,7 @@ def initialize():
         LOGDIR = check_setting_str(CFG, 'General', 'logdir', '')
         NOTIFICATION_FREQUENCY = int(check_setting_int(CFG, 'General', 'notification_frequency', 0))
         NOTIFICATION_UNITS = check_setting_str(CFG, 'General', 'notification_units', '')
+        NOTIFY_NOMINAL = bool(check_setting_int(CFG, 'General', 'notify_nominal', 1))
 
         CPU_INFO_PATH = check_setting_str(CFG, 'Server', 'cpu_info_path', '/proc/cpuinfo')
         PSEUDOFILE_FOLDER = check_setting_str(CFG, 'Server', 'pseudofile_folder', '/sys/devices/virtual/thermal/thermal_zone0/')
@@ -306,6 +308,7 @@ def config_write():
     new_config['General']['logdir'] = LOGDIR
     new_config['General']['notification_frequency'] = int(NOTIFICATION_FREQUENCY)
     new_config['General']['notification_units'] = NOTIFICATION_UNITS
+    new_config['General']['notify_nominal'] = int(NOTIFY_NOMINAL)
 
     new_config['Server'] = {}
     new_config['Server']['cpu_info_path'] = CPU_INFO_PATH

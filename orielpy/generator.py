@@ -624,6 +624,6 @@ def generateTweet():
 				ext_index+=1
 
 
-	if error_msg == 0:
+	if error_msg == 0 and orielpy.NOTIFY_NOMINAL == 1:
 		notifiers.notify_health(formatter.now()+": Server Status Nominal")
 		

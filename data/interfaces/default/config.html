@@ -46,7 +46,15 @@
             </select>
             </td>
             <td>Launch Browser:</td>
-            <td><input type="checkbox" name="launch_browser" value=1 ${orielpy.LAUNCH_BROWSER}></td>
+            <td>
+                <%
+                if orielpy.LAUNCH_BROWSER == 1:
+                    checked = 'checked="checked"'
+                else:
+                    checked = ""
+                %>
+                <input type="checkbox" name="launch_browser" ${checked}>
+            </td>
         </tr>
         <tr>
             <td>Notification Frequency:
@@ -69,6 +77,18 @@
                 <option value="minutes" ${selected}>Minutes</option>
             </select>
             </td>
+
+            <td>Notification on Nominal:</td>
+            <td>
+                <%
+                if orielpy.NOTIFY_NOMINAL == 1:
+                    checked = 'checked="checked"'
+                else:
+                    checked = ""
+                %>
+                <input type="checkbox" name="notify_nominal" ${checked}>
+            </td>
+
         </tr>
         <tr><td colspan=4 align=right><input type="submit" value="Save Changes" /></td></tr>
     </table>

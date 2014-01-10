@@ -1,7 +1,7 @@
 # OrielPy
 
 This program shows "at-a-glance" hardware and system information for your Linux server through any web browser, 
-including variants such as: QNAP appliances, RaspberryPi, etc; without the need to login to terminal.  OrielPy
+including variants such as: Ubuntu, QNAP appliances, RaspberryPi, etc; without the need to login to terminal.  OrielPy
 is based on Oriel-Window and ported for the CherryPy framework.  It now has the ability to send a tweet if
 the server is experiencing user-defined off-nominal conditions.
  
@@ -28,6 +28,7 @@ the server is experiencing user-defined off-nominal conditions.
 ## Prerequisites
 1. Currently works on Linux systems with Python installed
 2. Requires installation of psutil (https://code.google.com/p/psutil/)
+3. lm-sensors package is required to generate pseudofiles on Ubuntu systems
 * Note that psutil package required is NOT the same as apt-get repository "psutils". Right now, psutil must be downloaded and installed manually with "python setup.py install"
 * If installation of psutil results in "error: command 'gcc' failed with exit status 1", you also need to install python development headers with "sudo apt-get install python-dev"
 
@@ -44,8 +45,9 @@ the server is experiencing user-defined off-nominal conditions.
 ## Disclaimers
 
 This has been tested on:
-1. QNAP TS-509 with 3.7, 3.8 & 4.0 firmwares.  
+1. QNAP TS-509 with 3.7, 3.8, 4.0, 4.1 firmwares.  
 2. Raspberry Pi, Rev. B
+3. Ubuntu Desktop/Server 13.10
 
 No warranty implied or provided.  
 Feel free to request new features or report bugs.  
