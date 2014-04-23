@@ -230,7 +230,7 @@ class WebInterface(object):
                     "LogPath":   logpath
                     }
                 myDB.upsert("logpaths", newValueDict, controlValueDict)
-        if action == 'removelog':
+        elif action == 'removelog':
             myDB.select("DELETE from logpaths WHERE Program=?", [program])
         raise cherrypy.HTTPRedirect('home')
     add_remove_logs.exposed = True

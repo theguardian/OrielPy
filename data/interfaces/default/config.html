@@ -201,8 +201,8 @@
     </div>
 
     <div id="config_notifications" style="display:none">
-        <table>
-            <form action="add_remove_rules" method="get">
+        <form action="add_remove_rules" method="get">
+        <table with="100%">
             <tr><td>Step 1:</td><td>Step 2:</td><td>Step 3:</td><td>Step 4:</td></tr>
             <tr>
             <td valign="top">
@@ -245,8 +245,10 @@
             <td valign="top"><input type="hidden" name="action" value="addrule"><input type="submit" value="+Rule"></td>
            </tr>
            <tr><td colspan=5><hr></td></tr>
+        </table>
         </form>
 
+    <table width="100%">
     %for rule in rulelist:
         <%
         if rule['rule2']:
@@ -271,18 +273,18 @@
     </div>
 
     <div id="config_logs" style="display:none">
+    <form action="add_remove_logs" method="get">
     <table width="100%">
         <tr>
-            <form action="add_remove_logs" method="get">
             <td>Name:</td>
             <td><input type="text" placeholder="Program Name" name="program" size="20" maxlength="20"></td>
             <td>Path/To/Logfile.log:</td>
             <td><input type="text" placeholder="Path/To/Logfile.log" name="logpath" size="40" maxlength="255"></td>
             <input type="hidden" name="action" value="addlog">
-            <td><input type="submit" value="+Logfile"></td>
-            </form>
+            <td><input type="submit" value="Logfile"></td>
         </tr>
     </table>
+    </form>
     <hr>
     <table width="100%">
     %for log in loglist:
