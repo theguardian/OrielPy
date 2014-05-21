@@ -42,15 +42,7 @@
             <td>Theme:</td>
             <td>
             <select name="http_look">
-            %for http_look in config['http_look_list']:
-                <%
-                    if http_look == orielpy.HTTP_LOOK:
-                        selected = 'selected="selected"'
-                    else:
-                        selected = ''
-                %>
-                <option value="${http_look}" ${selected}>${http_look}</option>
-            %endfor
+                <option value="${orielpy.HTTP_LOOK}">${orielpy.HTTP_LOOK}</option>
             </select>
             </td>
             <td>Launch Browser:</td>

@@ -35,7 +35,7 @@ class WebInterface(object):
         return serve_template(templatename="index.html", title="Home")
     home.exposed=True
 
-    def config(self):
+    def update_config(self):
         http_look_dir = os.path.join(orielpy.PROG_DIR, 'data/interfaces/')
         http_look_list = [ name for name in os.listdir(http_look_dir) if os.path.isdir(os.path.join(http_look_dir, name)) ]
 
@@ -76,8 +76,15 @@ class WebInterface(object):
                     "twitter_password" :     orielpy.TWITTER_PASSWORD,
                     "twitter_prefix" :     orielpy.TWITTER_PREFIX
                 }
-        return serve_template(templatename="config.html", title="Settings", config=config)    
-    config.exposed = True
+
+        myDB = database.DBConnection()
+        loglist = myDB.select('SELECT * from logpaths ORDER BY program ASC')
+        rulelist = myDB.select('SELECT * from rules ORDER BY id_num ASC')
+        subcall = subroutines()
+        disk_json, ext_json = subcall.diskio_subroutine()
+        cpu_json, mem_json, swap_json, partition_json, networking_json, nw_json = subcall.dynamic_subroutine()
+        return serve_template(templatename="config.html", title="Config", config=config, loglist=loglist, rulelist=rulelist, volumes=partition_json, disk=disk_json, ext=ext_json)
+    update_config.exposed = True
 
     def generalUpdate(self, server_name="Server", http_host='0.0.0.0', http_user=None, http_port=5151, http_pass=None, http_look=None, launch_browser=1, logdir=None, 
         notification_frequency=0, notification_units='Hours', notify_nominal=1):
@@ -173,16 +180,6 @@ class WebInterface(object):
         message = 'restarting ...'
         return serve_template(templatename="shutdown.html", title="Restart", message=message, timer=10)
     restart.exposed = True
-
-    def update_config(self):
-        myDB = database.DBConnection()
-        loglist = myDB.select('SELECT * from logpaths ORDER BY program ASC')
-        rulelist = myDB.select('SELECT * from rules ORDER BY id_num ASC')
-        subcall = subroutines()
-        disk_json, ext_json = subcall.diskio_subroutine()
-        cpu_json, mem_json, swap_json, partition_json, networking_json, nw_json = subcall.dynamic_subroutine()
-        return serve_template(templatename="config.html", title="Config", loglist=loglist, rulelist=rulelist, volumes=partition_json, disk=disk_json, ext=ext_json)
-    update_config.exposed = True
 
     def notify(self):
         return serve_template(templatename="notify_config.html", title="Configure Notifications")

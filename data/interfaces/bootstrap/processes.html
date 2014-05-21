@@ -1,0 +1,30 @@
+<div class="process_summary">
+</div>
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+	setInterval(function() {	
+		$('.invisible').load('sysprocesses', function(){
+			var processes = $('#running_process').html();
+			if(typeof processes !== 'undefined') {
+				processes_json = JSON.parse(processes);
+				$('.process_summary').html('');
+				$.each(processes_json, function(i, item) {
+					if(processes_json[i].pid !== 0) {
+						$('.process_summary').append('<p class="name-left"><b>PID</b>: '+processes_json[i].pid+'</p>');
+						$('.process_summary').append('<p class="name-left-gap"><b>Process</b>: '+processes_json[i].name+'</p>');
+						$('.process_summary').append('<p class="name-left-gap"><b>PPID</b>: '+processes_json[i].ppid+'</p>');
+						$('.process_summary').append('<p class="name-left-gap"><b>Parent</b>: '+processes_json[i].parent+'</p>');
+						$('.process_summary').append('<p class="name-left-gap"><b>Load</b>: '+processes_json[i].percent+' %</p>');
+						$('.process_summary').append('<p>'+processes_json[i].cmd+'</p>');
+					}
+					else {
+						$('.process_summary').append('No actively running processes.');
+					};
+				});
+			};
+		});
+	}, 10000); 
+});
+</script>
