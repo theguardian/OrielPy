@@ -70,7 +70,7 @@ $(document).ready(function() {
 			ext_summary_json = JSON.parse(ext_summary_info);
 			$('.ext_summary').html('');
 			$.each(ext_summary_json, function(i, item) {	
-				$('.ext_summary').append('<tr><td class="topscaf1">'+ext_summary_json[i].disk_id+'</td><td class="topscaf2" progress_minute gradient_minute"><span style="width:'+ext_summary_json[i].activity+'%; background:#83F52C"></span></td><td class="topscaf3">'+ext_summary_json[i].status+'</td></tr>');
+				$('.ext_summary').append('<tr><td class="topscaf1">'+ext_summary_json[i].disk_id+'</td><td class="topscaf2 progress_minute gradient_minute"><span style="width:'+ext_summary_json[i].activity+'%; background:#83F52C"></span></td><td class="topscaf3">'+ext_summary_json[i].status+'</td></tr>');
 			});
 		});
 	}, 2000); 
