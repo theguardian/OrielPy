@@ -142,6 +142,11 @@ td.topscaf3 {
 	width:85%;
 }
 
+table.process_summary {
+	border-spacing: 5px;
+    border-collapse: separate;	
+}
+
 table.disk_summary {
 	margin-left:30%;
 	width:70%;

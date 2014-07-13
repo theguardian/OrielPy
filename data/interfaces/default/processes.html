@@ -1,5 +1,5 @@
-<div class="process_summary">
-</div>
+<table class="process_summary">
+</table>
 
 
 <script type="text/javascript">
@@ -12,15 +12,10 @@ $(document).ready(function() {
 				$('.process_summary').html('');
 				$.each(processes_json, function(i, item) {
 					if(processes_json[i].pid !== 0) {
-						$('.process_summary').append('<p class="name-left"><b>PID</b>: '+processes_json[i].pid+'</p>');
-						$('.process_summary').append('<p class="name-left-gap"><b>Process</b>: '+processes_json[i].name+'</p>');
-						$('.process_summary').append('<p class="name-left-gap"><b>PPID</b>: '+processes_json[i].ppid+'</p>');
-						$('.process_summary').append('<p class="name-left-gap"><b>Parent</b>: '+processes_json[i].parent+'</p>');
-						$('.process_summary').append('<p class="name-left-gap"><b>Load</b>: '+processes_json[i].percent+' %</p>');
-						$('.process_summary').append('<p>'+processes_json[i].cmd+'</p>');
+						$('.process_summary').append('<tr><td>PID</td><td>Name</td><td>PPID</td><td>Parent</td><td>Load</td><td>CMD</td></tr><tr><td>'+processes_json[i].pid+'</td><td>'+processes_json[i].name+'</td><td>'+processes_json[i].ppid+'</td><td>'+processes_json[i].parent+'</td><td>'+processes_json[i].percent+'%</td><td>'+processes_json[i].cmd+'</td></tr>');
 					}
 					else {
-						$('.process_summary').append('No actively running processes.');
+						$('.process_summary').append('<tr><td>No actively running processes.</td></tr>');
 					};
 				});
 			};
