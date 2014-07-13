@@ -521,7 +521,7 @@ class subroutines:
                 single_file = open(path, 'r')
                 single_lines = [line.strip() for line in single_file]
                 single_file.close()
-                log_files[key] = single_lines[len(single_lines)-1]
+                log_files[key] = single_lines[len(single_lines)-1].replace("<","").replace(">","")
             except:
                 log_files[key] = "Log not available"
         
