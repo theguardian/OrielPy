@@ -147,6 +147,11 @@ table.process_summary {
     border-collapse: separate;	
 }
 
+table.log_summary {
+	border-spacing: 5px;
+    border-collapse: separate;	
+}
+
 table.disk_summary {
 	margin-left:30%;
 	width:70%;
