@@ -237,7 +237,7 @@ class subroutines:
                         int_tot_list['activity'] = "100"
             if not int_tot_list['activity']:
                 int_tot_list['status'] = "Idle"
-                int_tot_list['activity'] = "0"      
+                int_tot_list['activity'] = "0"
             int_final_list.append(int_tot_list)
             keep_count +=1
 
@@ -257,7 +257,7 @@ class subroutines:
                         ext_tot_list['activity'] = "100"
             if not ext_tot_list['activity']:
                 ext_tot_list['status'] = "Idle"
-                ext_tot_list['activity'] = "0"      
+                ext_tot_list['activity'] = "0"
             ext_final_list.append(ext_tot_list)
             keep_count +=1
 
@@ -342,7 +342,7 @@ class subroutines:
                 cpu_array = collections.defaultdict()
                 cpu_array['cpu_percent'] = str(int(cpu_import[cpu_index]))
                 cpu_list.append(cpu_array)
-                cpu_index +=1       
+                cpu_index +=1
             cpu_json = json.dumps(cpu_list)
 
         #=====================================================
@@ -405,7 +405,7 @@ class subroutines:
                 filesystem = str(filesystem_temp.group(1))[1:-1]
             partition_array['mountpoint'] = mountpoint
             partition_array['filesystem'] = filesystem
-            
+
             if filesystem !="":
                 disk_total_raw = psutil.disk_usage(mountpoint).total
                 disk_total_MB = float(disk_total_raw) / 1048576
@@ -416,7 +416,7 @@ class subroutines:
                     disk_total = disk_total_MB
                     disk_total = str("%.0f" % disk_total)+" MB"
                 partition_array['total'] = disk_total
-            
+
                 disk_used_raw = psutil.disk_usage(mountpoint).used
                 disk_used_MB = float(disk_used_raw) / 1048576
                 if disk_used_MB > 1024:
@@ -426,7 +426,7 @@ class subroutines:
                     disk_used = disk_used_MB
                     disk_used = str("%.0f" % disk_used)+" MB"
                 partition_array['used'] = disk_used
-            
+
                 disk_free_raw = psutil.disk_usage(mountpoint).free
                 disk_free_MB = float(disk_free_raw) / 1048576
                 if disk_free_MB > 1024:
@@ -436,11 +436,11 @@ class subroutines:
                     disk_free = disk_free_MB
                     disk_free = str("%.0f" % disk_free)+" MB"
                 partition_array['free'] = disk_free
-            
+
                 disk_percent_raw = psutil.disk_usage(mountpoint).percent
                 disk_percent = str(int(disk_percent_raw))
                 partition_array['percent'] = disk_percent
-            
+
                 partition_list.append(partition_array)
             partition_index +=1
 
@@ -473,14 +473,14 @@ class subroutines:
         else:
             sent_speed = sent_Kbps
             sent_rate = str("%.0f" % sent_speed)+" kB/s"
-            
+
         if received_Kbps > 1024:
             received_speed = received_Kbps / 1024
             received_rate = str("%.1f" % received_speed)+" MB/s"
         else:
             received_speed = received_Kbps
             received_rate = str("%.0f" % received_speed)+" kB/s"
-            
+
         sent_saturation = 100 * (sent_Mbps / orielpy.NIC_READ_MAX)
         received_saturation = 100 * (received_Mbps / orielpy.NIC_WRITE_MAX)
 
@@ -524,7 +524,7 @@ class subroutines:
                 log_files[key] = single_lines[len(single_lines)-1].replace("<","").replace(">","")
             except:
                 log_files[key] = "Log not available"
-        
+
         log_files = collections.OrderedDict(sorted(log_files.items()))
 
         log_files_json = json.dumps(log_files)
@@ -551,14 +551,17 @@ class subroutines:
             if psutil.pid_exists(process):
                 load = psutil.Process(process).get_cpu_percent(interval=0.1)
                 if load != 0.0:
+                    process_dict = psutil.Process(process)
+                    process_info = process_dict.as_dict(attrs=["ppid", "name", "cmdline"])
                     proc_array['pid'] = process
-                    proc_array['name'] = psutil.Process(process).name
+                    proc_array['name'] = process_info['name']
                     proc_array['percent'] = load
-                    parent = psutil.Process(process).ppid
-                    proc_array['ppid'] = parent
-                    proc_array['parent'] = psutil.Process(parent).name
-                    cmd_state = psutil.Process(process).cmdline
-                    proc_array['cmd'] = cmd_state
+                    parent_id = process_info['ppid']
+                    proc_array['ppid'] = parent_id
+                    parent = psutil.Process(parent_id)
+                    parent_info = parent.as_dict(attrs=["name"])
+                    proc_array['parent'] = parent_info['name']
+                    proc_array['cmd'] = process_info['cmdline']
                     proc_tree.append(proc_array)
 
         if not proc_tree:

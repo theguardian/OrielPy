@@ -4,22 +4,18 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-	setInterval(function() {	
-		$('.invisible').load('sysprocesses', function(){
-			var processes = $('#running_process').html();
-			if(typeof processes !== 'undefined') {
-				processes_json = JSON.parse(processes);
-				$('.process_summary').html('');
-				$.each(processes_json, function(i, item) {
-					if(processes_json[i].pid !== 0) {
-						$('.process_summary').append('<tr><td>PID</td><td>Name</td><td>PPID</td><td>Parent</td><td>Load</td><td>CMD</td></tr><tr><td>'+processes_json[i].pid+'</td><td>'+processes_json[i].name+'</td><td>'+processes_json[i].ppid+'</td><td>'+processes_json[i].parent+'</td><td>'+processes_json[i].percent+'%</td><td>'+processes_json[i].cmd+'</td></tr>');
-					}
-					else {
-						$('.process_summary').append('<tr><td>No actively running processes.</td></tr>');
-					};
-				});
-			};
+	setInterval(function() {
+		$.getJSON('processes', function(data) {
+			$('.process_summary').html('');
+			$.each(data, function(i, item) {
+				if(data[i].pid !== 0) {
+					$('.process_summary').append('<tr><td>PID</td><td>Name</td><td>PPID</td><td>Parent</td><td>Load</td><td>CMD</td></tr><tr><td>'+data[i].pid+'</td><td>'+data[i].name+'</td><td>'+data[i].ppid+'</td><td>'+data[i].parent+'</td><td>'+data[i].percent+'%</td><td>'+data[i].cmd+'</td></tr>');
+				}
+				else {
+					$('.process_summary').append('<tr><td>No actively running processes.</td></tr>');
+				};
+			});
 		});
-	}, 10000); 
+	}, 10000);
 });
 </script>

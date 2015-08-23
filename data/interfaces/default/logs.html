@@ -4,22 +4,19 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-	setInterval(function() {	
-		$('.invisible').load('syslogs', function(){
-			var log_files = $('#log_files').html();
-			log_files_json = JSON.parse(log_files);
+	setInterval(function() {
+		$.getJSON('logfiles', function(data) {
+			$('.log_summary').html('');
 			var entry;
 			var name;
 			var count;
-			entry = log_files_json[0];
-			$('.log_summary').html('');
+			entry = data[0];
 			count = 0;
 			for (name in entry) {
 				$('.log_summary').append('<tr><td>'+name+': </td><td>'+entry[name]+'</td></tr>');
 				++count;
 			}
 		});
-	}, 2000); 
-
+	}, 2000);
 });
 </script>

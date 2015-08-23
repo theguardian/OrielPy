@@ -86,7 +86,7 @@ class WebInterface(object):
         return serve_template(templatename="config.html", title="Config", config=config, loglist=loglist, rulelist=rulelist, volumes=partition_json, disk=disk_json, ext=ext_json)
     update_config.exposed = True
 
-    def generalUpdate(self, server_name="Server", http_host='0.0.0.0', http_user=None, http_port=5151, http_pass=None, http_look=None, launch_browser=1, logdir=None, 
+    def generalUpdate(self, server_name="Server", http_host='0.0.0.0', http_user=None, http_port=5151, http_pass=None, http_look=None, launch_browser=1, logdir=None,
         notification_frequency=0, notification_units='Hours', notify_nominal=1):
 
         if launch_browser == "on":
@@ -117,9 +117,9 @@ class WebInterface(object):
 
     generalUpdate.exposed = True
 
-    def serverUpdate(self, 
-        cpu_info_path='/proc/cpuinfo', pseudofile_folder='/sys/devices/virtual/thermal/thermal_zone0/', num_internal_disk_capacity=0, sys_fan_file=None, sys_fan_min=0, sys_fan_max=5000, 
-        cpu_fan_file=None, cpu_fan_min=0, cpu_fan_max=5000, cpu_temp_file='temp', cpu_temp_min=0, cpu_temp_max=100, sys_temp_file=None, 
+    def serverUpdate(self,
+        cpu_info_path='/proc/cpuinfo', pseudofile_folder='/sys/devices/virtual/thermal/thermal_zone0/', num_internal_disk_capacity=0, sys_fan_file=None, sys_fan_min=0, sys_fan_max=5000,
+        cpu_fan_file=None, cpu_fan_min=0, cpu_fan_max=5000, cpu_temp_file='temp', cpu_temp_min=0, cpu_temp_max=100, sys_temp_file=None,
         sys_temp_min=0, sys_temp_max=100, nic_read_max=200, nic_write_max=200, internal_disk_max_rate=200, external_disk_max_rate=200):
 
         orielpy.CPU_INFO_PATH = cpu_info_path
@@ -148,7 +148,7 @@ class WebInterface(object):
 
     serverUpdate.exposed = True
 
-    def notifyUpdate(self, use_twitter=0, twitter_username=None, twitter_password=None, 
+    def notifyUpdate(self, use_twitter=0, twitter_username=None, twitter_password=None,
         twitter_prefix='OrielPy'):
 
         if use_twitter == "on":
@@ -187,35 +187,71 @@ class WebInterface(object):
 
     def static(self):
         subcall = subroutines()
-        return "<p id=\"cpu_information\">"+subcall.static_subroutine()+"</p>"
+        return subcall.static_subroutine()
     static.exposed=True
 
-    def diskio(self):
+    def diskio_internal(self):
         subcall = subroutines()
         disk_json, ext_json = subcall.diskio_subroutine()
-        return "<p id=\"disk_summary\">"+disk_json+"</p><p id=\"ext_summary\">"+ext_json+"</p>"
-    diskio.exposed=True
+        return disk_json
+    diskio_internal.exposed=True
+
+    def diskio_external(self):
+        subcall = subroutines()
+        disk_json, ext_json = subcall.diskio_subroutine()
+        return ext_json
+    diskio_external.exposed=True
+
+    def processors(self):
+        subcall = subroutines()
+        cpu_json, mem_json, swap_json, partition_json, networking_json, nw_json = subcall.dynamic_subroutine()
+        return cpu_json
+    processors.exposed=True
+
+    def memory(self):
+        subcall = subroutines()
+        cpu_json, mem_json, swap_json, partition_json, networking_json, nw_json = subcall.dynamic_subroutine()
+        return mem_json
+    memory.exposed=True
+
+    def swap(self):
+        subcall = subroutines()
+        cpu_json, mem_json, swap_json, partition_json, networking_json, nw_json = subcall.dynamic_subroutine()
+        return swap_json
+    swap.exposed=True
+
+    def partitions(self):
+        subcall = subroutines()
+        cpu_json, mem_json, swap_json, partition_json, networking_json, nw_json = subcall.dynamic_subroutine()
+        return partition_json
+    partitions.exposed=True
+
+    def network(self):
+        subcall = subroutines()
+        cpu_json, mem_json, swap_json, partition_json, networking_json, nw_json = subcall.dynamic_subroutine()
+        return networking_json
+    network.exposed=True
+
+    def activity(self):
+        subcall = subroutines()
+        cpu_json, mem_json, swap_json, partition_json, networking_json, nw_json = subcall.dynamic_subroutine()
+        return nw_json
+    activity.exposed=True
 
     def sysfiles(self):
         subcall = subroutines()
-        return "<p id=\"fans_temps_info\">"+subcall.sysfiles_subroutine()+"</p>"
+        return subcall.sysfiles_subroutine()
     sysfiles.exposed=True
 
-    def dynamic(self):
+    def logfiles(self):
         subcall = subroutines()
-        cpu_json, mem_json, swap_json, partition_json, networking_json, nw_json = subcall.dynamic_subroutine()
-        return "<p id=\"cpu_info\">"+cpu_json+"</p><p id=\"ram_info\">"+mem_json+"</p><p id=\"swap_info\">" +swap_json+"</p><p id=\"partition_info\">"+partition_json+"</p><p id=\"networking_info\">"+networking_json+"</p><p id=\"network_activity\">"+nw_json+"</p>" 
-    dynamic.exposed=True
+        return subcall.syslogs_subroutine()
+    logfiles.exposed=True
 
-    def syslogs(self):
+    def processes(self):
         subcall = subroutines()
-        return "<p id=\"log_files\">"+subcall.syslogs_subroutine()+"</p>"
-    syslogs.exposed=True
-
-    def sysprocesses(self):
-        subcall = subroutines()
-        return "<p id=\"running_process\">"+subcall.sysprocesses_subroutine()+"</p>"
-    sysprocesses.exposed=True
+        return subcall.sysprocesses_subroutine()
+    processes.exposed=True
 
     def add_remove_logs(self, action=None, program=None, logpath=None):
         myDB = database.DBConnection()

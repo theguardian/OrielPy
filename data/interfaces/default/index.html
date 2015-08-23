@@ -4,127 +4,109 @@
 
 <div id="container">
 
-	<div class="invisible">
-	</div>
-
 	<div id="content">
 		<div id="fileserver">
 			<div class="server_image">
 				<img class="unit" src="images/server.png">
 			</div>
-			<div class="cpu_information">
-			</div>
+			<div class="cpu_information"></div>
+
 			<table class="disk_summary"></table>
 			<table class="ext_summary"></table>
 			<table class="network"></table>
-
-			<table class="cpu_info">
-			</table>
-			<table class="fans_temps_info">
-			</table>
-			<table class="ram_info">
-			</table>
-			<table class="swap_info">
-			</table>
-			<table class="hd_info">
-			</table>
-			<table class="networking_info">
-			</table>
+			<table class="cpu_info"></table>
+			<table class="fans_temps_info"></table>
+			<table class="ram_info"></table>
+			<table class="swap_info"></table>
+			<table class="hd_info"></table>
+			<table class="networking_info"></table>
 		</div>
 	</div>
+
 	<div id="footer">
 		<div class="foot_left">
-		Powered by <a href="https://github.com/theguardian/OrielPy" target="_new">OrielPy</a> ... 
-		<p id="clickforrestart">[Restart]</p> | 
-		<p id="clickforshutdown">[Shutdown]</p> | 
-		<p id="clickforconfig">[Configuration]</p>
+			Powered by <a href="https://github.com/theguardian/OrielPy" target="_new">OrielPy</a> ...
+			<p id="clickforrestart">[Restart]</p> |
+			<p id="clickforshutdown">[Shutdown]</p> |
+			<p id="clickforconfig">[Configuration]</p>
 		</div>
-		<div class="foot_right"><p id="clickforlogs">LOGS</p> | <p id="clickforprocess">PROCESSES</p>
+		<div class="foot_right">
+			<p id="clickforlogs">LOGS</p> | <p id="clickforprocess">PROCESSES</p>
 		</div>
 	</div>
-	
 </div>
 <div id="dialog"></div>
 
 <script type="text/javascript">
 $(document).ready(function() {
-	$('.invisible').load('static', function(){
-		var cpu_information = $('#cpu_information').html();
-		cpu_information_json = JSON.parse(cpu_information);
-		
-		$('.cpu_information').append('CPU: '+cpu_information_json[0].model_name+'<BR>');
-		$('.cpu_information').append('Speed: '+cpu_information_json[0].cpu_MHz+' MHz | ');
-		$('.cpu_information').append('Cache: '+cpu_information_json[0].cache_size);
+		$.getJSON('static', function(data) {
+			$('.cpu_information').append('CPU: '+data[0].model_name+'<BR>');
+			$('.cpu_information').append('Speed: '+data[0].cpu_MHz+' MHz | ');
+			$('.cpu_information').append('Cache: '+data[0].cache_size);
+		});
 
-	});
-	
-	setInterval(function() {	
-		$('.invisible').load('diskio', function(){
-			var disk_summary_info = $('#disk_summary').html();
-			disk_summary_json = JSON.parse(disk_summary_info);
+	setInterval(function() {
+		$.getJSON('diskio_internal', function(data) {
 			$('.disk_summary').html('');
-			$.each(disk_summary_json, function(i, item) {	
-				$('.disk_summary').append('<tr><td class="topscaf1">'+disk_summary_json[i].disk_id+'</td><td class="topscaf2 progress_minute gradient_minute"><span style="width:'+disk_summary_json[i].activity+'%; background:#83F52C"></span></td><td class="topscaf3">'+disk_summary_json[i].status+'</td></tr>');
-			});
-			var ext_summary_info = $('#ext_summary').html();
-			ext_summary_json = JSON.parse(ext_summary_info);
-			$('.ext_summary').html('');
-			$.each(ext_summary_json, function(i, item) {	
-				$('.ext_summary').append('<tr><td class="topscaf1">'+ext_summary_json[i].disk_id+'</td><td class="topscaf2 progress_minute gradient_minute"><span style="width:'+ext_summary_json[i].activity+'%; background:#83F52C"></span></td><td class="topscaf3">'+ext_summary_json[i].status+'</td></tr>');
+			$.each(data, function(i, item) {
+				$('.disk_summary').append('<tr><td class="topscaf1">'+data[i].disk_id+'</td><td class="topscaf2 progress_minute gradient_minute"><span style="width:'+data[i].activity+'%; background:#83F52C"></span></td><td class="topscaf3">'+data[i].status+'</td></tr>');
 			});
 		});
-	}, 2000); 
-	
-	setInterval(function() {
-		$('.invisible').load('dynamic', function(){
-		
-			var cpu_info = $('#cpu_info').html();
-			cpu_info_json = JSON.parse(cpu_info);
-			$('.cpu_info').html('');
-			$.each(cpu_info_json, function(i, item) {
-				var id = i+1;
-				$('.cpu_info').append('<tr><td class="scaffold1">CPU'+id+'</td><td class="scaffold2"></td><td class="scaffold3 progress_small gradient_small"><span style="width:'+cpu_info_json[i].cpu_percent+'%; background:#67C8FF"></span></td><td class="scaffold4">'+cpu_info_json[i].cpu_percent+'%</td></tr>');
-			});
-			
-			var ram_info = $('#ram_info').html();
-			ram_info_json = JSON.parse(ram_info);
-			$('.ram_info').html('');
-			$('.ram_info').append('<tr><td class="scaffold1">RAM</td><td class="scaffold2">'+ram_info_json[0].mem_free+' / '+ram_info_json[0].mem_total+' MB Free</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+ram_info_json[0].mem_percent+'%; background:#83F52C"></span></td><td class="scaffold4">'+ram_info_json[0].mem_percent+'%</td></tr>');
-			
-			var swap_info = $('#swap_info').html();
-			swap_info_json = JSON.parse(swap_info);
-			$('.swap_info').html('');
-			$('.swap_info').append('<tr><td class="scaffold1">Swap Memory</td><td class="scaffold2">'+swap_info_json[0].swap_free+' / '+swap_info_json[0].swap_total+' MB Free</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+swap_info_json[0].swap_percent+'%; background:#83F52C"></span></td><td class="scaffold4">'+swap_info_json[0].swap_percent+'%</td></tr>');
-			
-			var hard_drive_info = $('#partition_info').html();
-			hard_drive_json = JSON.parse(hard_drive_info);
-			$('.hd_info').html('');
-			$.each(hard_drive_json, function(i, item) {			
-				$('.hd_info').append('<tr><td class="scaffold1">'+hard_drive_json[i].mountpoint+' ('+hard_drive_json[i].filesystem+')</td><td class="scaffold2">'+hard_drive_json[i].free+' / '+hard_drive_json[i].total+' Free</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+hard_drive_json[i].percent+'%; background:#FD5F00"></span></td><td class="scaffold4">'+hard_drive_json[i].percent+'%</td></tr>');
-			});
-			
-			var network_activity = $('#network_activity').html();
-			network_json = JSON.parse(network_activity);
-			$('.network').html('');
-			$('.network').append('<tr><td class="topscaf1">'+network_json[0].name+'</td><td class="topscaf2 progress_minute gradient_minute"><span style="width:'+network_json[0].activity+'%; background:#FD5F00"></span></td><td class="topscaf3">'+network_json[0].status+'</td></tr>');
 
-			
-			var networking_info = $('#networking_info').html();
-			networking_json = JSON.parse(networking_info);
-			$('.networking_info').html('');
-			$('.networking_info').append('<tr><td class="scaffold1">Network Rx Rate</td><td class="scaffold2">'+networking_json[0].download_rate+'</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+networking_json[0].download_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+networking_json[0].download_percent+'%</td></tr><tr><td class="scaffold1">Network Tx Rate</td><td class="scaffold2">'+networking_json[0].upload_rate+'</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+networking_json[0].upload_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+networking_json[0].upload_percent+'%</td></tr>');
-
+		$.getJSON('diskio_external', function(data) {
+			$('.ext_summary').html('');
+			$.each(data, function(i, item) {
+				$('.ext_summary').append('<tr><td class="topscaf1">'+data[i].disk_id+'</td><td class="topscaf2 progress_minute gradient_minute"><span style="width:'+data[i].activity+'%; background:#83F52C"></span></td><td class="topscaf3">'+data[i].status+'</td></tr>');
+			});
 		});
 	}, 2000);
 
-	setInterval(function() {	
-		$('.invisible').load('sysfiles', function(){
-			var fans_temps_info = $('#fans_temps_info').html();
-			fans_temps_json = JSON.parse(fans_temps_info);
-			$('.fans_temps_info').html('');
 
-			$('.fans_temps_info').append('<tr><td class="scaffold1">CPU Temperature</td><td class="scaffold2">'+fans_temps_json[0].cpu1_temp+'&degC</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+fans_temps_json[0].cpu1_temp_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+fans_temps_json[0].cpu1_temp_percent+'%</td></tr><tr><td class="scaffold1">CPU Fan Speed</td><td class="scaffold2">'+fans_temps_json[0].cpu_fan+' RPM</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+fans_temps_json[0].cpu_fan_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+fans_temps_json[0].cpu_fan_percent+'%</td></tr><tr><td class="scaffold1">System Temperature</td><td class="scaffold2">'+fans_temps_json[0].sys_temp+'&degC</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+fans_temps_json[0].sys_temp_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+fans_temps_json[0].sys_temp_percent+'%</td></tr><tr><td class="scaffold1">System Fan Speed</td><td class="scaffold2">'+fans_temps_json[0].sys_fan+' RPM</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+fans_temps_json[0].sys_fan_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+fans_temps_json[0].sys_fan_percent+'%</td></tr>'); });
-	}, 2000); 
+	setInterval(function() {
+		$.getJSON('processors', function(data) {
+			$('.cpu_info').html('');
+			$.each(data, function(i, item) {
+				var id = i+1;
+				$('.cpu_info').append('<tr><td class="scaffold1">CPU'+id+'</td><td class="scaffold2"></td><td class="scaffold3 progress_small gradient_small"><span style="width:'+data[i].cpu_percent+'%; background:#67C8FF"></span></td><td class="scaffold4">'+data[i].cpu_percent+'%</td></tr>');
+			});
+		});
+
+		$.getJSON('memory', function(data) {
+			var ram_info = $('#ram_info').html();
+			$('.ram_info').html('');
+			$('.ram_info').append('<tr><td class="scaffold1">RAM</td><td class="scaffold2">'+data[0].mem_free+' / '+data[0].mem_total+' MB Free</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+data[0].mem_percent+'%; background:#83F52C"></span></td><td class="scaffold4">'+data[0].mem_percent+'%</td></tr>');
+		});
+
+		$.getJSON('swap', function(data) {
+			var swap_info = $('#swap_info').html();
+			$('.swap_info').html('');
+			$('.swap_info').append('<tr><td class="scaffold1">Swap Memory</td><td class="scaffold2">'+data[0].swap_free+' / '+data[0].swap_total+' MB Free</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+data[0].swap_percent+'%; background:#83F52C"></span></td><td class="scaffold4">'+data[0].swap_percent+'%</td></tr>');
+		});
+
+		$.getJSON('partitions', function(data) {
+			$('.hd_info').html('');
+			$.each(data, function(i, item) {
+				$('.hd_info').append('<tr><td class="scaffold1">'+data[i].mountpoint+' ('+data[i].filesystem+')</td><td class="scaffold2">'+data[i].free+' / '+data[i].total+' Free</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+data[i].percent+'%; background:#FD5F00"></span></td><td class="scaffold4">'+data[i].percent+'%</td></tr>');
+			});
+		});
+
+		$.getJSON('network', function(data) {
+			$('.networking_info').html('');
+			$('.networking_info').append('<tr><td class="scaffold1">Network Rx Rate</td><td class="scaffold2">'+data[0].download_rate+'</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+data[0].download_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+data[0].download_percent+'%</td></tr><tr><td class="scaffold1">Network Tx Rate</td><td class="scaffold2">'+data[0].upload_rate+'</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+data[0].upload_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+data[0].upload_percent+'%</td></tr>');
+		});
+
+		$.getJSON('activity', function(data) {
+			$('.network').html('');
+			$('.network').append('<tr><td class="topscaf1">'+data[0].name+'</td><td class="topscaf2 progress_minute gradient_minute"><span style="width:'+data[0].activity+'%; background:#FD5F00"></span></td><td class="topscaf3">'+data[0].status+'</td></tr>');
+		});
+	}, 2000);
+
+	setInterval(function() {
+		$.getJSON('sysfiles', function(data) {
+			$('.fans_temps_info').html('');
+			$('.fans_temps_info').append('<tr><td class="scaffold1">CPU Temperature</td><td class="scaffold2">'+data[0].cpu1_temp+'&degC</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+data[0].cpu1_temp_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+data[0].cpu1_temp_percent+'%</td></tr><tr><td class="scaffold1">CPU Fan Speed</td><td class="scaffold2">'+data[0].cpu_fan+' RPM</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+data[0].cpu_fan_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+data[0].cpu_fan_percent+'%</td></tr><tr><td class="scaffold1">System Temperature</td><td class="scaffold2">'+data[0].sys_temp+'&degC</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+data[0].sys_temp_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+data[0].sys_temp_percent+'%</td></tr><tr><td class="scaffold1">System Fan Speed</td><td class="scaffold2">'+data[0].sys_fan+' RPM</td><td class="scaffold3 progress_small gradient_small"><span style="width:'+data[0].sys_fan_percent+'%; background:#ffffff"></span></td><td class="scaffold4">'+data[0].sys_fan_percent+'%</td></tr>');
+			});
+	}, 2000);
 
 	$("#dialog").dialog({
 			autoOpen: false,
@@ -135,7 +117,7 @@ $(document).ready(function() {
 			modal : true,
 			width: 800,
 		});
-	
+
 	$('#clickforlogs').click(function() {
 		$("#dialog").load('interfaces/default/logs.html', function() {
 			$("#dialog").dialog("option", "title", "MONITOR LOG FILES");
