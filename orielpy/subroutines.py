@@ -452,11 +452,11 @@ class subroutines:
         #NETWORK INFO=========================================
         networking_array = collections.defaultdict()
 
-        networking_sent_raw1 = psutil.network_io_counters(pernic=False).bytes_sent
-        networking_received_raw1 = psutil.network_io_counters(pernic=False).bytes_recv
+        networking_sent_raw1 = psutil.net_io_counters(pernic=False).bytes_sent
+        networking_received_raw1 = psutil.net_io_counters(pernic=False).bytes_recv
         time.sleep(1)
-        networking_sent_raw2 = psutil.network_io_counters(pernic=False).bytes_sent
-        networking_received_raw2 = psutil.network_io_counters(pernic=False).bytes_recv
+        networking_sent_raw2 = psutil.net_io_counters(pernic=False).bytes_sent
+        networking_received_raw2 = psutil.net_io_counters(pernic=False).bytes_recv
 
         sent_Bps = networking_sent_raw2 - networking_sent_raw1
         received_Bps = networking_received_raw2 - networking_received_raw1
