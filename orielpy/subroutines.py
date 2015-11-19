@@ -72,6 +72,8 @@ class subroutines:
                     check_place = alphabet[check_value]
                 except:
                     check_place = 999
+            elif "ram" in value:
+                check_place = 999
             elif value == "mmcblk0":
                 check_place = 999
             elif "md" in value:
