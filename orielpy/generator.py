@@ -4,13 +4,15 @@ from urllib import FancyURLopener
 
 import orielpy
 import json
+import collections
 
 from orielpy import database, logger, formatter, notifiers, subroutines
 from subroutines import subroutines
 
-def generateTweet():
+def health(notify=True):
 
-	error_msg = 0
+	health_list=[]
+	error_msg=0
 	myDB = database.DBConnection()
 	subcall = subroutines()
 
@@ -18,8 +20,8 @@ def generateTweet():
 	sysfiles_json = subcall.sysfiles_subroutine()
 	cpu_json, mem_json, swap_json, partition_json, networking_json, nw_json = subcall.dynamic_subroutine()
 	log_json = subcall.syslogs_subroutine()
-	process_json = subcall.sysprocesses_subroutine()
-	
+	#process_json = subcall.sysprocesses_subroutine()
+
 	json_disk = json.loads(disk_json)
 	json_ext = json.loads(ext_json)
 	json_sysfiles = json.loads(sysfiles_json)
@@ -30,7 +32,7 @@ def generateTweet():
 	json_networking = json.loads(networking_json)
 	json_nw = json.loads(nw_json)
 	json_log = json.loads(log_json)
-	json_process = json.loads(process_json)
+	#json_process = json.loads(process_json)
 
 
 	rulelist = myDB.select('SELECT * from rules')
@@ -49,21 +51,11 @@ def generateTweet():
 					log_string = value
 			if condition == "Contains String":
 				if comparison_value in log_string:
-					if message_rule == "Send Automated Message":
-						notify_msg = prog_name+" log file contains ["+comparison_value+"]"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, prog_name+" log file contains ["+comparison_value+"]", notify, health_list)
 					error_msg+=1
 			elif condition == "Does Not Contain String":
 				if comparison_value not in log_string:
-					if message_rule == "Send Automated Message":
-						notify_msg = prog_name+" log file does not contain ["+comparison_value+"]"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, prog_name+" log file does not contain ["+comparison_value+"]", notify, health_list)
 					error_msg+=1
 
 		elif flag == "CPU Utilization":
@@ -80,21 +72,11 @@ def generateTweet():
 				pass
 			if condition == "Is Less Than":
 				if comparison_value > cpu_value:
-					if message_rule == "Send Automated Message":
-						notify_msg = "CPU utilization less than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "CPU utilization less than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than":
 				if comparison_value < cpu_value:
-					if message_rule == "Send Automated Message":
-						notify_msg = "CPU utilization greater than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "CPU utilization greater than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 
 		elif flag == "CPU Temperature":
@@ -111,39 +93,19 @@ def generateTweet():
 				pass
 			if condition == "Is Less Than" and comparison_units == "Deg-C":
 				if comparison_value > cpu_temp:
-					if message_rule == "Send Automated Message":
-						notify_msg = "CPU temperature less than "+str(comparison_value)+" Deg-C"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "CPU temperature less than "+str(comparison_value)+" Deg-C", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "Deg-C":
 				if comparison_value < cpu_temp:
-					if message_rule == "Send Automated Message":
-						notify_msg = "CPU temperature greater than "+str(comparison_value)+" Deg-C"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "CPU temperature greater than "+str(comparison_value)+" Deg-C", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Less Than" and comparison_units == "Percent":
 				if comparison_value > cpu_temp_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "CPU temperature less than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "CPU temperature less than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "Percent":
 				if comparison_value < cpu_temp_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "CPU temperature greater than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "CPU temperature greater than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 
 		elif flag == "System Temperature":
@@ -160,39 +122,19 @@ def generateTweet():
 				pass
 			if condition == "Is Less Than" and comparison_units == "Deg-C":
 				if comparison_value > sys_temp:
-					if message_rule == "Send Automated Message":
-						notify_msg = "System temperature less than "+str(comparison_value)+" Deg-C"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "System temperature less than "+str(comparison_value)+" Deg-C", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "Deg-C":
 				if comparison_value < sys_temp:
-					if message_rule == "Send Automated Message":
-						notify_msg = "System temperature greater than "+str(comparison_value)+" Deg-C"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "System temperature greater than "+str(comparison_value)+" Deg-C", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Less Than" and comparison_units == "Percent":
 				if comparison_value > sys_temp_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "System temperature less than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "System temperature less than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "Percent":
 				if comparison_value < sys_temp_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "System temperature greater than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "System temperature greater than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 
 		elif flag == "CPU Fan Speed":
@@ -209,39 +151,19 @@ def generateTweet():
 				pass
 			if condition == "Is Less Than" and comparison_units == "RPM":
 				if comparison_value > cpu_fan:
-					if message_rule == "Send Automated Message":
-						notify_msg = "CPU fan speed less than "+str(comparison_value)+" RPM"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "CPU fan speed less than "+str(comparison_value)+" RPM", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "RPM":
 				if comparison_value < cpu_fan:
-					if message_rule == "Send Automated Message":
-						notify_msg = "CPU fan speed greater than "+str(comparison_value)+" RPM"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "CPU fan speed greater than "+str(comparison_value)+" RPM", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Less Than" and comparison_units == "Percent":
 				if comparison_value > cpu_fan_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "CPU fan speed less than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "CPU fan speed less than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "Percent":
 				if comparison_value < cpu_fan_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "CPU fan speed greater than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "CPU fan speed greater than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 
 		elif flag == "System Fan Speed":
@@ -258,39 +180,19 @@ def generateTweet():
 				pass
 			if condition == "Is Less Than" and comparison_units == "RPM":
 				if comparison_value > sys_fan:
-					if message_rule == "Send Automated Message":
-						notify_msg = "System fan speed less than "+str(comparison_value)+" RPM"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "System fan speed less than "+str(comparison_value)+" RPM", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "RPM":
 				if comparison_value < sys_fan:
-					if message_rule == "Send Automated Message":
-						notify_msg = "System fan speed greater than "+str(comparison_value)+" RPM"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "System fan speed greater than "+str(comparison_value)+" RPM", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Less Than" and comparison_units == "Percent":
 				if comparison_value > sys_fan_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "System fan speed less than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "System fan speed less than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "Percent":
 				if comparison_value < sys_fan_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "System fan speed greater than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "System fan speed greater than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 
 		elif flag == "Network Rx Rate":
@@ -310,41 +212,21 @@ def generateTweet():
 				pass
 			if condition == "Is Less Than" and comparison_units == "MB/s":
 				if comparison_value > rx_rate:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Network Rx rate less than "+str(comparison_value)+" MB/s"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Network Rx rate less than "+str(comparison_value)+" MB/s", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "MB/s":
 				if comparison_value < rx_rate:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Network Rx rate greater than "+str(comparison_value)+" MB/s"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Network Rx rate greater than "+str(comparison_value)+" MB/s", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Less Than" and comparison_units == "Percent":
 				if comparison_value > rx_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Network Rx rate less than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Network Rx rate less than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "Percent":
 				if comparison_value < rx_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Network Rx rate greater than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Network Rx rate greater than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
-		
+
 		elif flag == "Network Tx Rate":
 			for key, value in json_networking[0].iteritems():
 				if key == "upload_rate":
@@ -362,49 +244,27 @@ def generateTweet():
 				pass
 			if condition == "Is Less Than" and comparison_units == "MB/s":
 				if comparison_value > tx_rate:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Network Tx rate less than "+str(comparison_value)+" MB/s"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Network Tx rate less than "+str(comparison_value)+" MB/s", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "MB/s":
 				if comparison_value < tx_rate:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Network Tx rate greater than "+str(comparison_value)+" MB/s"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Network Tx rate greater than "+str(comparison_value)+" MB/s", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Less Than" and comparison_units == "Percent":
 				if comparison_value > tx_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Network Tx rate less than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Network Tx rate less than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "Percent":
 				if comparison_value < tx_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Network Tx rate greater than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Network Tx rate greater than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 
 		elif flag == "RAM Free Space":
 			for key, value in json_mem[0].iteritems():
 				if key == "mem_free":
 					mem_free = value
-					print mem_free
 				elif key == "mem_percent":
 					mem_percent = 100-int(value)
-					print mem_percent
 			try:
 				comparison_value = int(comparison_value)
 				mem_free = int(mem_free)
@@ -413,39 +273,19 @@ def generateTweet():
 				pass
 			if condition == "Is Less Than" and comparison_units == "MB":
 				if comparison_value > mem_free:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Free RAM less than "+str(comparison_value)+" MB"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Free RAM less than "+str(comparison_value)+" MB", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "MB":
 				if comparison_value < mem_free:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Free RAM greater than "+str(comparison_value)+" MB"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Free RAM greater than "+str(comparison_value)+" MB", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Less Than" and comparison_units == "Percent":
 				if comparison_value > mem_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Free RAM less than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Free RAM less than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "Percent":
 				if comparison_value < mem_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Free RAM greater than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Free RAM greater than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 
 		elif flag == "Swap Memory Free Space":
@@ -462,39 +302,19 @@ def generateTweet():
 				pass
 			if condition == "Is Less Than" and comparison_units == "MB":
 				if comparison_value > swap_free:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Free Swap Memory less than "+str(comparison_value)+" MB"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Free Swap Memory less than "+str(comparison_value)+" MB", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "MB":
 				if comparison_value < swap_free:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Free Swap Memory greater than "+str(comparison_value)+" MB"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Free Swap Memory greater than "+str(comparison_value)+" MB", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Less Than" and comparison_units == "Percent":
 				if comparison_value > swap_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Free Swap Memory less than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Free Swap Memory less than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 			elif condition == "Is Greater Than" and comparison_units == "Percent":
 				if comparison_value < swap_percent:
-					if message_rule == "Send Automated Message":
-						notify_msg = "Free Swap Memory greater than "+str(comparison_value)+"%"
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
-					elif message_rule == "Send Custom Message":
-						notify_msg = custom_message
-						notifiers.notify_health(formatter.now()+": "+notify_msg)
+					messaging(message_rule, custom_message, "Free Swap Memory greater than "+str(comparison_value)+"%", notify, health_list)
 					error_msg+=1
 
 		elif flag == "Volume Free Space":
@@ -518,57 +338,27 @@ def generateTweet():
 						pass
 					if condition == "Is Less Than" and comparison_units == "MB" and volume_units == "MB":
 						if comparison_value > volume_free:
-							if message_rule == "Send Automated Message":
-								notify_msg = volume+" free space less than "+str(comparison_value)+" MB"
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
-							elif message_rule == "Send Custom Message":
-								notify_msg = custom_message
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
+							messaging(message_rule, custom_message, volume+" free space less than "+str(comparison_value)+" MB", notify, health_list)
 							error_msg+=1
 					elif condition == "Is Greater Than" and comparison_units == "MB" and volume_units == "MB":
 						if comparison_value < volume_free:
-							if message_rule == "Send Automated Message":
-								notify_msg = volume+" free space greater than "+str(comparison_value)+" MB"
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
-							elif message_rule == "Send Custom Message":
-								notify_msg = custom_message
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
+							messaging(message_rule, custom_message, volume+" free space greater than "+str(comparison_value)+" MB", notify, health_list)
 							error_msg+=1
 					elif condition == "Is Less Than" and comparison_units == "GB" and volume_units == "GB":
 						if comparison_value > volume_free:
-							if message_rule == "Send Automated Message":
-								notify_msg = volume+" free space less than "+str(comparison_value)+" GB"
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
-							elif message_rule == "Send Custom Message":
-								notify_msg = custom_message
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
+							messaging(message_rule, custom_message, volume+" free space less than "+str(comparison_value)+" GB", notify, health_list)
 							error_msg+=1
 					elif condition == "Is Greater Than" and comparison_units == "GB" and volume_units == "GB":
 						if comparison_value < volume_free:
-							if message_rule == "Send Automated Message":
-								notify_msg = volume+" free space greater than "+str(comparison_value)+" GB"
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
-							elif message_rule == "Send Custom Message":
-								notify_msg = custom_message
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
+							messaging(message_rule, custom_message, volume+" free space greater than "+str(comparison_value)+" GB", notify, health_list)
 							error_msg+=1
 					elif condition == "Is Less Than" and comparison_units == "Percent":
 						if comparison_value > volume_percent:
-							if message_rule == "Send Automated Message":
-								notify_msg = volume+" free space less than "+str(comparison_value)+"%"
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
-							elif message_rule == "Send Custom Message":
-								notify_msg = custom_message
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
+							messaging(message_rule, custom_message, volume+" free space less than "+str(comparison_value)+"%", notify, health_list)
 							error_msg+=1
 					elif condition == "Is Greater Than" and comparison_units == "Percent":
 						if comparison_value < volume_percent:
-							if message_rule == "Send Automated Message":
-								notify_msg = volume+" free space greater than "+str(comparison_value)+"%"
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
-							elif message_rule == "Send Custom Message":
-								notify_msg = custom_message
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
+							messaging(message_rule, custom_message, volume+" free space greater than "+str(comparison_value)+"%", notify, health_list)
 							error_msg+=1
 				volume_index+=1
 
@@ -580,21 +370,11 @@ def generateTweet():
 					disk_status = json_disk[disk_index]['status']
 					if condition == "Is":
 						if comparison_value == disk_status:
-							if message_rule == "Send Automated Message":
-								notify_msg = disk+" is "+str(comparison_value)
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
-							elif message_rule == "Send Custom Message":
-								notify_msg = custom_message
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
+							messaging(message_rule, custom_message, disk+" is "+str(comparison_value), notify, health_list)
 							error_msg+=1
 					elif condition == "Is Not":
 						if comparison_value != disk_status:
-							if message_rule == "Send Automated Message":
-								notify_msg = disk+" is not "+str(comparison_value)
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
-							elif message_rule == "Send Custom Message":
-								notify_msg = custom_message
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
+							messaging(message_rule, custom_message, disk+" is not "+str(comparison_value), notify, health_list)
 							error_msg+=1
 				disk_index+=1
 
@@ -605,25 +385,37 @@ def generateTweet():
 					ext_status = json_ext[ext_index]['status']
 					if condition == "Is":
 						if comparison_value == ext_status:
-							if message_rule == "Send Automated Message":
-								notify_msg = ext+" is "+str(comparison_value)
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
-							elif message_rule == "Send Custom Message":
-								notify_msg = custom_message
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
+							messaging(message_rule, custom_message, ext+" is "+str(comparison_value), notify, health_list)
 							error_msg+=1
 					elif condition == "Is Not":
 						if comparison_value != ext_status:
-							if message_rule == "Send Automated Message":
-								notify_msg = ext+" is not "+str(comparison_value)
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
-							elif message_rule == "Send Custom Message":
-								notify_msg = custom_message
-								notifiers.notify_health(formatter.now()+": "+notify_msg)
+							messaging(message_rule, custom_message, ext+" is not "+str(comparison_value), notify, health_list)
 							error_msg+=1
 				ext_index+=1
 
-
 	if error_msg == 0 and orielpy.NOTIFY_NOMINAL == 1:
 		notifiers.notify_health(formatter.now()+": Server Status Nominal")
-		
+
+	if error_msg == 0:
+		health_array = collections.defaultdict()
+		health_array['status'] = "OK"
+		health_list.append(health_array)
+	else:
+		health_array = collections.defaultdict()
+		health_array['status'] = "WARN"
+		health_list.append(health_array)
+
+	health_json = json.dumps(health_list)
+	return health_json
+
+def messaging(message_rule=None, custom_message=None, notify_msg=None, notify=False, health_list=None):
+		if message_rule == "Send Custom Message":
+			notify_msg = custom_message
+		else:
+			notify_msg = notify_msg
+		if notify:
+			notifiers.notify_health(formatter.now()+": "+notify_msg)
+			logger.warn("%s" % notify_msg)
+		health_array = collections.defaultdict()
+		health_array['warning'] = notify_msg
+		health_list.append(health_array)

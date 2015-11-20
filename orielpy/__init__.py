@@ -213,7 +213,7 @@ def initialize():
         TWITTER_PASSWORD = check_setting_str(CFG, 'Twitter', 'twitter_password', '')
         TWITTER_PREFIX = check_setting_str(CFG, 'Twitter', 'twitter_prefix', 'OrielPy')
 
- 
+
         if not LOGDIR:
             LOGDIR = os.path.join(DATADIR, 'Logs')
 
@@ -357,9 +357,9 @@ def start():
         # Crons and scheduled jobs go here
         starttime = datetime.datetime.now()
         if NOTIFICATION_UNITS == "hours" and NOTIFICATION_FREQUENCY != 0:
-            SCHED.add_interval_job(generator.generateTweet, hours=NOTIFICATION_FREQUENCY)
+            SCHED.add_interval_job(generator.health, hours=NOTIFICATION_FREQUENCY)
         elif NOTIFICATION_UNITS == "minutes" and NOTIFICATION_FREQUENCY !=0:
-            SCHED.add_interval_job(generator.generateTweet, minutes=NOTIFICATION_FREQUENCY)
+            SCHED.add_interval_job(generator.health, minutes=NOTIFICATION_FREQUENCY)
         #SCHED.add_interval_job(searchnzb.searchbook, minutes=SEARCH_INTERVAL, start_date=starttime+datetime.timedelta(minutes=2))
 
         SCHED.start()

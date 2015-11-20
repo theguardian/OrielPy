@@ -536,12 +536,12 @@ class subroutines:
 
 
     def sysprocesses_subroutine(self):
-        proc_import = psutil.get_pid_list()
+        proc_import = psutil.pids()
         #print proc_import
 
         proc_prune = []
         for process in proc_import:
-            proc_mem = psutil.Process(process).get_memory_info()
+            proc_mem = psutil.Process(process).memory_info()
             if str(proc_mem) != "meminfo(rss=0, vms=0)":
                 proc_prune.append(process)
 
@@ -551,7 +551,7 @@ class subroutines:
         for process in proc_prune:
             proc_array = collections.defaultdict()
             if psutil.pid_exists(process):
-                load = psutil.Process(process).get_cpu_percent(interval=0.1)
+                load = psutil.Process(process).cpu_percent(interval=0.1)
                 if load != 0.0:
                     process_dict = psutil.Process(process)
                     process_info = process_dict.as_dict(attrs=["ppid", "name", "cmdline"])

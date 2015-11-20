@@ -8,7 +8,7 @@ import threading, time
 
 import orielpy
 
-from orielpy import logger, formatter, database, notifiers, subroutines
+from orielpy import logger, formatter, database, notifiers, subroutines, generator
 from subroutines import subroutines
 
 def serve_template(templatename, **kwargs):
@@ -242,6 +242,11 @@ class WebInterface(object):
         subcall = subroutines()
         return subcall.sysfiles_subroutine()
     sysfiles.exposed=True
+
+    def health(self):
+        subcall = generator.health(notify=False)
+        return subcall
+    health.exposed=True
 
     def logfiles(self):
         subcall = subroutines()
