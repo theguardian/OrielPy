@@ -5,6 +5,13 @@ from orielpy.webServe import WebInterface
 
 def initialize(options={}):
 
+    if not orielpy.VERIFY_SSL:
+        try:
+            import ssl
+            ssl._create_default_https_context = ssl._create_unverified_context
+        except:
+            pass
+
     cherrypy.config.update({
         'log.screen':           False,
         'server.thread_pool':   10,

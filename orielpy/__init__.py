@@ -1,6 +1,6 @@
 from __future__ import with_statement
 
-import os, sys, subprocess, threading, cherrypy, webbrowser, sqlite3
+import os, sys, subprocess, threading, cherrypy, sqlite3
 
 import datetime
 
@@ -44,6 +44,7 @@ HTTP_USER = None
 HTTP_PASS = None
 HTTP_ROOT = None
 HTTP_LOOK = None
+VERIFY_SSL = None
 LAUNCH_BROWSER = False
 NOTIFICATION_FREQUENCY = 0
 NOTIFICATION_UNITS = None
@@ -156,7 +157,8 @@ def initialize():
 
     with INIT_LOCK:
 
-        global __INITIALIZED__, FULL_PATH, PROG_DIR, LOGLEVEL, DAEMON, DATADIR, CONFIGFILE, CFG, LOGDIR, SERVER_NAME, HTTP_HOST, HTTP_PORT, HTTP_USER, HTTP_PASS, HTTP_ROOT, HTTP_LOOK, LAUNCH_BROWSER, \
+        global __INITIALIZED__, FULL_PATH, PROG_DIR, LOGLEVEL, DAEMON, DATADIR, CONFIGFILE, CFG, LOGDIR, SERVER_NAME, HTTP_HOST, HTTP_PORT, HTTP_USER, HTTP_PASS, HTTP_ROOT, HTTP_LOOK, \
+        VERIFY_SSL, LAUNCH_BROWSER, \
         NOTIFY_NOMINAL, CPU_INFO_PATH, PSEUDOFILE_FOLDER, NUM_INTERNAL_DISK_CAPACITY, SYS_FAN_FILE, SYS_FAN_MIN, SYS_FAN_MAX, CPU_FAN_FILE, CPU_FAN_MIN, CPU_FAN_MAX, \
         CPU_TEMP_FILE, CPU_TEMP_MIN, CPU_TEMP_MAX, SYS_TEMP_FILE, SYS_TEMP_MIN, SYS_TEMP_MAX, NIC_READ_MAX, NIC_WRITE_MAX, INTERNAL_DISK_MAX_RATE, \
         EXTERNAL_DISK_MAX_RATE, USE_TWITTER, TWITTER_USERNAME, TWITTER_PASSWORD, TWITTER_PREFIX, NOTIFICATION_FREQUENCY, NOTIFICATION_UNITS
@@ -182,11 +184,12 @@ def initialize():
         HTTP_PASS = check_setting_str(CFG, 'General', 'http_pass', '')
         HTTP_ROOT = check_setting_str(CFG, 'General', 'http_root', '')
         HTTP_LOOK = check_setting_str(CFG, 'General', 'http_look', 'default')
-        LAUNCH_BROWSER = bool(check_setting_int(CFG, 'General', 'launch_browser', 1))
+        VERIFY_SSL = bool(check_setting_int(CFG, 'General', 'verify_ssl', 1))
+        LAUNCH_BROWSER = bool(check_setting_int(CFG, 'General', 'launch_browser', 0))
         LOGDIR = check_setting_str(CFG, 'General', 'logdir', '')
         NOTIFICATION_FREQUENCY = int(check_setting_int(CFG, 'General', 'notification_frequency', 0))
         NOTIFICATION_UNITS = check_setting_str(CFG, 'General', 'notification_units', '')
-        NOTIFY_NOMINAL = bool(check_setting_int(CFG, 'General', 'notify_nominal', 1))
+        NOTIFY_NOMINAL = bool(check_setting_int(CFG, 'General', 'notify_nominal', 0))
 
         CPU_INFO_PATH = check_setting_str(CFG, 'Server', 'cpu_info_path', '/proc/cpuinfo')
         PSEUDOFILE_FOLDER = check_setting_str(CFG, 'Server', 'pseudofile_folder', '/sys/devices/virtual/thermal/thermal_zone0/')
@@ -288,6 +291,7 @@ def launch_browser(host, port, root):
         host = 'localhost'
 
     try:
+        import webbrowser
         webbrowser.open('http://%s:%i%s' % (host, port, root))
     except Exception, e:
         logger.error('Could not launch browser: %s' % e)
@@ -304,6 +308,7 @@ def config_write():
     new_config['General']['http_pass'] = HTTP_PASS
     new_config['General']['http_root'] = HTTP_ROOT
     new_config['General']['http_look'] = HTTP_LOOK
+    new_config['General']['verify_ssl'] = int(VERIFY_SSL)
     new_config['General']['launch_browser'] = int(LAUNCH_BROWSER)
     new_config['General']['logdir'] = LOGDIR
     new_config['General']['notification_frequency'] = int(NOTIFICATION_FREQUENCY)

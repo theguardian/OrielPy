@@ -5,14 +5,14 @@
     from orielpy import database
     myDB = database.DBConnection()
     logfile_json = {}
-    
+
     counter = 0
     logfile_list = myDB.action("SELECT Program from logpaths ORDER BY Program COLLATE NOCASE")
     for log in logfile_list:
-        logfile_json[counter] = log['Program'] 
+        logfile_json[counter] = log['Program']
         counter+=1
     json_logfiles = json.dumps(logfile_json)
-    
+
 %>
 <div class="configuration">
     <p id="general_header">[GENERAL]</p>  |  <p id="server_header">[SERVER]</p>  |  <p id="twitter_header">[TWITTER]</p>  |  <p id="notifications_header">[NOTIFICATIONS]</p>  |  <p id="logs_header">[LOGS]</p>
@@ -64,6 +64,22 @@
                 <input type="checkbox" name="launch_browser" ${checked}>
             </td>
         </tr>
+
+        <tr>
+          <td></td>
+          <td></td>
+          <td>Verify SSL</td>
+          <td>
+            <%
+            if orielpy.VERIFY_SSL == 1:
+                checked = 'checked="checked"'
+            else:
+                checked = ""
+            %>
+            <input type="checkbox" name="verify_ssl" ${checked}>
+          </td>
+        </tr>
+
         <tr>
             <td>Notification Frequency:
             <BR>(Requires Restart)</td>
@@ -127,7 +143,7 @@
         <tr>
             <td>CPU Thermal Range:</td>
             <td>
-            <input type="text" name="cpu_temp_min" value="${orielpy.CPU_TEMP_MIN}" size="3" maxlength="3"> - 
+            <input type="text" name="cpu_temp_min" value="${orielpy.CPU_TEMP_MIN}" size="3" maxlength="3"> -
             <input type="text" name="cpu_temp_max" value="${orielpy.CPU_TEMP_MAX}" size="3" maxlength="3"> Deg-C
             </td>
             <td>SYS Thermal Range:</td>
@@ -138,12 +154,12 @@
         <tr>
             <td>CPU Fan Range:</td>
             <td>
-            <input type="text" name="cpu_fan_min" value="${orielpy.CPU_FAN_MIN}" size="5" maxlength="5"> - 
+            <input type="text" name="cpu_fan_min" value="${orielpy.CPU_FAN_MIN}" size="5" maxlength="5"> -
             <input type="text" name="cpu_fan_max" value="${orielpy.CPU_FAN_MAX}" size="5" maxlength="5"> RPM
             </td>
             <td>SYS Fan Range:</td>
             <td>
-            <input type="text" name="sys_fan_min" value="${orielpy.SYS_FAN_MIN}" size="5" maxlength="5"> - 
+            <input type="text" name="sys_fan_min" value="${orielpy.SYS_FAN_MIN}" size="5" maxlength="5"> -
             <input type="text" name="sys_fan_max" value="${orielpy.SYS_FAN_MAX}" size="5" maxlength="5"> RPM
             </td>
         </tr>
@@ -501,7 +517,7 @@ $(document).ready(function () {
             }
             else {
                 $('#choice2').html('');
-                $("#choice2").hide(); 
+                $("#choice2").hide();
             }
 
             if (selected_choice == "CPU Utilization") {

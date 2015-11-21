@@ -47,6 +47,7 @@ class WebInterface(object):
                     "http_pass":        orielpy.HTTP_PASS,
                     "http_look":        orielpy.HTTP_LOOK,
                     "http_look_list":   http_look_list,
+                    "verify_ssl":   int(orielpy.VERIFY_SSL),
                     "launch_browser":   int(orielpy.LAUNCH_BROWSER),
                     "logdir":           orielpy.LOGDIR,
                     "notification_frequency":   orielpy.NOTIFICATION_FREQUENCY,
@@ -86,8 +87,14 @@ class WebInterface(object):
         return serve_template(templatename="config.html", title="Config", config=config, loglist=loglist, rulelist=rulelist, volumes=partition_json, disk=disk_json, ext=ext_json)
     update_config.exposed = True
 
-    def generalUpdate(self, server_name="Server", http_host='0.0.0.0', http_user=None, http_port=5151, http_pass=None, http_look=None, launch_browser=1, logdir=None,
-        notification_frequency=0, notification_units='Hours', notify_nominal=1):
+    def generalUpdate(self, server_name="Server", http_host='0.0.0.0', http_user=None, http_port=5151, http_pass=None, http_look=None,
+        verify_ssl=1, launch_browser=0, logdir=None,
+        notification_frequency=0, notification_units='Hours', notify_nominal=0):
+
+        if verify_ssl == "on":
+            verify_ssl = 1
+        else:
+            verify_ssl = 0
 
         if launch_browser == "on":
             launch_browser = 1
@@ -105,6 +112,7 @@ class WebInterface(object):
         orielpy.HTTP_USER = http_user
         orielpy.HTTP_PASS = http_pass
         orielpy.HTTP_LOOK = http_look
+        orielpy.VERIFY_SSL = verify_ssl
         orielpy.LAUNCH_BROWSER = launch_browser
         orielpy.LOGDIR = logdir
         orielpy.NOTIFICATION_FREQUENCY = int(notification_frequency)
