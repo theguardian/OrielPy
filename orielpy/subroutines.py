@@ -31,13 +31,12 @@ class subroutines:
                 key = key.replace(" ", "_")
                 value = str(new_line[1:])[2:-2]
                 cpu_arr[key] = value
+            fileIn.close()
         except:
             logger.warn("Couldn't read CPU info from file %s" % fileName)
             cpu_arr['model_name'] = "unknown CPU"
             cpu_arr['cpu_MHz'] = "unknown speed"
             cpu_arr['cache_size'] = "unknown cache"
-        finally:
-            fileIn.close()
 
         return cpu_arr
 
@@ -284,38 +283,34 @@ class subroutines:
         try:
             fileIn = open(fileName, 'r')
             fan1 = int(fileIn.read())
+            fileIn.close()
         except:
             fan1 = 0
-        finally:
-            fileIn.close()
 
         fileName = os.path.join(orielpy.PSEUDOFILE_FOLDER, orielpy.SYS_FAN_FILE)
         try:
             fileIn = open(fileName, 'r')
             fan2 = int(fileIn.read())
+            fileIn.close()
         except:
             fan2 = 0
-        finally:
-            fileIn.close()
 
         fileName = os.path.join(orielpy.PSEUDOFILE_FOLDER, orielpy.CPU_TEMP_FILE)
 
         try:
             fileIn = open(fileName, 'r')
             temp1 = float(fileIn.read())/1000
+            fileIn.close()
         except:
             temp1 = 0
-        finally:
-            fileIn.close()
-
+            
         fileName = os.path.join(orielpy.PSEUDOFILE_FOLDER, orielpy.SYS_TEMP_FILE)
         try:
             fileIn = open(fileName, 'r')
             temp3 = float(fileIn.read())/1000
+            fileIn.close()
         except:
             temp3 = 0
-        finally:
-            fileIn.close()
 
         cpu_fan_percent = 100 * (float(fan1) - float(orielpy.CPU_FAN_MIN)) / (float(orielpy.CPU_FAN_MAX) - float(orielpy.CPU_FAN_MIN))
         sys_fan_percent = 100 * (float(fan2) - float(orielpy.SYS_FAN_MIN)) / (float(orielpy.SYS_FAN_MAX) - float(orielpy.SYS_FAN_MIN))
@@ -534,10 +529,9 @@ class subroutines:
                 lines = [line.rstrip() for line in fileIn]
                 lines = [line for line in lines if line]
                 record['logline'] = lines[len(lines)-1].replace("<","").replace(">","")
+                fileIn.close()
             except:
                 record['logline'] = "Log not available"
-            finally:
-                fileIn.close()
 
             log_files.append(record)
 
