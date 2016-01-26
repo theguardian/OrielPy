@@ -1,0 +1,479 @@
+<%inherit file="base.html"/>
+<%!
+    import cherrystrap
+%>
+
+<%def name="headIncludes()">
+<title>${cherrystrap.APP_NAME}: ${title}</title>
+</%def>
+
+<%def name="body()">
+<h1>Add &amp; Remove Rules</h1>
+
+<form id="add_rule_form">
+  <div class="row">
+    <div class="col-md-3 form-group">
+      <label for="rule1">Step 1</label>
+      <select name="rule1" id="rule1" class="form-control" onClick="change_rule()">
+        <option value="CPU Utilization" selected="selected">CPU Utilization</option>
+        <option value="CPU Temperature">CPU Temperature</option>
+        <option value="CPU Fan Speed">CPU Fan Speed</option>
+        <option value="System Temperature">System Temperature</option>
+        <option value="System Fan Speed">System Fan Speed</option>
+        <option value="Network Rx Rate">Network Rx Rate</option>
+        <option value="Network Tx Rate">Network Tx Rate</option>
+        <option value="RAM Free Space">RAM Free Space</option>
+        <option value="Swap Memory Free Space">Swap Memory Free Space</option>
+        <option value="Volume Free Space">Volume Free Space</option>
+        <option value="Disk Status">Disk Status</option>
+        <option value="Log File">Log File</option>
+      </select>
+      <select name="rule2" id="rule2" class="form-control" style="display:none"></select>
+    </div>
+    <div class="col-md-2 form-group">
+      <label for="rule3">Step 2</label>
+      <select name="rule3" id="rule3" class="form-control">
+        <option value="Is Less Than">Is Less Than</option>
+        <option value="Is Greater Than">Is Greater Than</option>
+      </select>
+    </div>
+    <div class="col-md-3 form-group">
+      <label for="rule4">Step 3</label>
+      <div class="input-group">
+        <div class="col-md-6">
+          <input type="text" name="rule4" value="" class="form-control" id="rule4" placeholder="Value">
+        </div>
+        <div class="col-md-6">
+          <select name="rule5" id="rule5" class="form-control">
+            <option value="Percent">Percent</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 form-group">
+      <label for="rule6">Step 4</label>
+      <select name="rule6" id="rule6" class="form-control" onClick="show_Bubble()">
+        <option value="Send Automated Message">Send Automated Message</option>
+        <option value="Send Custom Message">Send Custom Message</option>
+      </select>
+      <input type="text" name="rule7" value="" class="form-control" id="rule7" placeholder="The Custom Message" style="display:none;">
+    </div>
+    <div class="col-md-1 form-group">
+      <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span>&nbsp; Rule</button>
+    </div>
+  </div>
+</form>
+
+<div class="row">
+  <table class="table table-striped" id="rulesTable">
+    <th>Step 1</th>
+    <th>Step 2</th>
+    <th>Step 3</th>
+    <th>Step 4</th>
+    <th>Remove</th>
+  </table>
+</div>
+
+</%def>
+
+<%def name="javascriptIncludes()">
+<script>
+
+$(document).ready(function() {
+  loadRules();
+});
+
+function loadRules()
+  {
+    $.getJSON('/api/v1/rules?token=${cherrystrap.API_TOKEN}', function(data) {
+      var i=0;
+      $('#rulesTable').html('');
+      $.each(data, function(i, item) {
+        if(data[i]['rule2']) {
+          var rule2 = '<BR>'+data[i]['rule2'];
+        } else {
+          var rule2 = '';
+        }
+        if(data[i]['rule5']) {
+          var rule5 = ' '+data[i]['rule5'];
+        } else {
+          var rule5 = '';
+        }
+        if(data[i]['rule7']) {
+          var rule7 = '<BR>'+data[i]['rule7'];
+        } else {
+          var rule7 = '';
+        }
+        $('#rulesTable').append('<tr><td>'+data[i]['rule1']+rule2+'</td> \
+          <td>'+data[i]['rule3']+'</td> \
+          <td>'+data[i]['rule4']+rule5+'</td> \
+          <td>'+data[i]['rule6']+rule7+'</td> \
+          <td valign="bottom"><button id="'+data[i]['id']+'" class="btn btn-danger" onclick="removeRule(this)"> \
+          <span class="glyphicon glyphicon-minus"></span>&nbsp;  Rule</button></td></tr>');
+        i++;
+      });
+    });
+  }
+
+  $("#add_rule_form").submit(function() {
+    var formData = $("#add_rule_form").serialize();
+    $.ajax({
+        url: "/api/v1/rules?token=${cherrystrap.API_TOKEN}",
+        type: "POST",
+        data: formData,
+        beforeSend: function() {
+            $(".ajaxMsg").html('<div class="alert alert-warning"><img src="images/ajax-loader.gif"/></div>').show();
+        },
+        success: function(data)
+        {
+            loadRules();
+            var message = JSON.parse(data)
+            $(".ajaxMsg").html('<div class="alert alert-'+message['status']+'">'+message['message']+'</div>').show().fadeOut(5000);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            $(".ajaxMsg").html('<div class="alert alert-danger">'+textStatus+': '+errorThrown+'</div>').show().fadeOut(5000);
+        }
+    });
+    return false;
+  });
+
+function removeRule(object)
+  {
+    $.ajax({
+        url: "/api/v1/rules?token=${cherrystrap.API_TOKEN}&id="+object.id,
+        type: "DELETE",
+        beforeSend: function() {
+            $(".ajaxMsg").html('<div class="alert alert-warning"><img src="images/ajax-loader.gif"/></div>').show();
+        },
+        success: function(data) {
+          loadRules();
+          var message = JSON.parse(data)
+          $(".ajaxMsg").html('<div class="alert alert-'+message['status']+'">'+message['message']+'</div>').show().fadeOut(5000);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            $(".ajaxMsg").html('<div class="alert alert-danger">'+textStatus+': '+errorThrown+'</div>').show().fadeOut(5000);
+        }
+      });
+  }
+
+  var logList;
+  $.getJSON('/api/v1/logs?token=${cherrystrap.API_TOKEN}', function(data){
+      logList = data;
+  });
+
+  var diskList;
+  $.getJSON('/api/v1/diskio?token=${cherrystrap.API_TOKEN}', function(data){
+      diskList = data;
+  });
+
+  var partitionList;
+  $.getJSON('/api/v1/partitions?token=${cherrystrap.API_TOKEN}', function(data){
+      partitionList = data;
+  });
+
+  function change_rule() {
+      selected_rule = $("#rule1").find("option:selected").text();
+      $("#rule1").change(function() {
+          selected_rule = $("#rule1").find("option:selected").text();
+          $('#rule2').html('');
+          if (selected_rule == "Log File") {
+              $.each(logList, function(i, item) {
+                  $('#rule2').append($("<option/>", {
+                      value: logList[i].program,
+                      text: logList[i].program
+                  }));
+              });
+              $("#rule2").show();
+
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Contains String",
+                      text: "Contains String"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Does Not Contain String",
+                      text: "Does Not Contain String"
+                  }));
+              $('#rule5').html('');
+              $("#rule5").hide();
+          }
+          else if (selected_rule == "Disk Status") {
+              $.each(diskList, function(i, item) {
+                  $('#rule2').append($("<option/>", {
+                      value: diskList[i].diskId,
+                      text: diskList[i].diskId
+                  }));
+              });
+              $("#rule2").show();
+
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Is",
+                      text: "Is"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Is Not",
+                      text: "Is Not"
+                  }));
+              $('#rule5').html('');
+              $("#rule5").hide();
+          }
+          else if (selected_rule == "Volume Free Space") {
+              $.each(partitionList, function(i, item) {
+                  $('#rule2').append($("<option/>", {
+                      value: partitionList[i].mountpoint,
+                      text: partitionList[i].mountpoint
+                  }));
+              });
+              $("#rule2").show();
+
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Is Less Than",
+                      text: "Is Less Than"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Is Greater Than",
+                      text: "Is Greater Than"
+                  }));
+
+              $('#rule5').html('');
+              $('#rule5').append($("<option/>", {
+                      value: "Percent",
+                      text: "Percent"
+                  }));
+              $('#rule5').append($("<option/>", {
+                      value: "MB",
+                      text: "MB"
+                  }));
+              $('#rule5').append($("<option/>", {
+                      value: "GB",
+                      text: "GB"
+                  }));
+              $("#rule5").show();
+          }
+          else {
+              $('#rule2').html('');
+              $("#rule2").hide();
+          }
+
+          if (selected_rule == "CPU Utilization") {
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Is Less Than",
+                      text: "Is Less Than"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Is Greater Than",
+                      text: "Is Greater Than"
+                  }));
+
+              $('#rule5').html('');
+              $('#rule5').append($("<option/>", {
+                      value: "Percent",
+                      text: "Percent"
+                  }));
+              $("#rule5").show();
+          }
+
+          else if (selected_rule == "CPU Temperature") {
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Is Less Than",
+                      text: "Is Less Than"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Is Greater Than",
+                      text: "Is Greater Than"
+                  }));
+
+              $('#rule5').html('');
+              $('#rule5').append($("<option/>", {
+                      value: "Percent",
+                      text: "Percent"
+                  }));
+              $('#rule5').append($("<option/>", {
+                      value: "Deg-C",
+                      text: "Deg-C"
+                  }));
+              $("#rule5").show();
+          }
+
+          else if (selected_rule == "System Temperature") {
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Is Less Than",
+                      text: "Is Less Than"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Is Greater Than",
+                      text: "Is Greater Than"
+                  }));
+
+              $('#rule5').html('');
+              $('#rule5').append($("<option/>", {
+                      value: "Percent",
+                      text: "Percent"
+                  }));
+              $('#rule5').append($("<option/>", {
+                      value: "Deg-C",
+                      text: "Deg-C"
+                  }));
+              $("#rule5").show();
+          }
+
+          else if (selected_rule == "CPU Fan Speed") {
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Is Less Than",
+                      text: "Is Less Than"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Is Greater Than",
+                      text: "Is Greater Than"
+                  }));
+
+              $('#rule5').html('');
+              $('#rule5').append($("<option/>", {
+                      value: "Percent",
+                      text: "Percent"
+                  }));
+              $('#rule5').append($("<option/>", {
+                      value: "RPM",
+                      text: "RPM"
+                  }));
+              $("#rule5").show();
+          }
+
+          else if (selected_rule == "System Fan Speed") {
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Is Less Than",
+                      text: "Is Less Than"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Is Greater Than",
+                      text: "Is Greater Than"
+                  }));
+
+              $('#rule5').html('');
+              $('#rule5').append($("<option/>", {
+                      value: "Percent",
+                      text: "Percent"
+                  }));
+              $('#rule5').append($("<option/>", {
+                      value: "RPM",
+                      text: "RPM"
+                  }));
+              $("#rule5").show();
+          }
+
+          else if (selected_rule == "Network Rx Rate") {
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Is Less Than",
+                      text: "Is Less Than"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Is Greater Than",
+                      text: "Is Greater Than"
+                  }));
+
+              $('#rule5').html('');
+              $('#rule5').append($("<option/>", {
+                      value: "Percent",
+                      text: "Percent"
+                  }));
+              $('#rule5').append($("<option/>", {
+                      value: "MB/s",
+                      text: "MB/s"
+                  }));
+              $("#rule5").show();
+          }
+
+          else if (selected_rule == "Network Tx Rate") {
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Is Less Than",
+                      text: "Is Less Than"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Is Greater Than",
+                      text: "Is Greater Than"
+                  }));
+
+              $('#rule5').html('');
+              $('#rule5').append($("<option/>", {
+                      value: "Percent",
+                      text: "Percent"
+                  }));
+              $('#rule5').append($("<option/>", {
+                      value: "MB/s",
+                      text: "MB/s"
+                  }));
+              $("#rule5").show();
+          }
+
+          else if (selected_rule == "RAM Free Space") {
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Is Less Than",
+                      text: "Is Less Than"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Is Greater Than",
+                      text: "Is Greater Than"
+                  }));
+
+              $('#rule5').html('');
+              $('#rule5').append($("<option/>", {
+                      value: "Percent",
+                      text: "Percent"
+                  }));
+              $('#rule5').append($("<option/>", {
+                      value: "MB",
+                      text: "MB"
+                  }));
+              $("#rule5").show();
+          }
+
+          else if (selected_rule == "Swap Memory Free Space") {
+              $('#rule3').html('');
+              $('#rule3').append($("<option/>", {
+                      value: "Is Less Than",
+                      text: "Is Less Than"
+                  }));
+              $('#rule3').append($("<option/>", {
+                      value: "Is Greater Than",
+                      text: "Is Greater Than"
+                  }));
+
+              $('#rule5').html('');
+              $('#rule5').append($("<option/>", {
+                      value: "Percent",
+                      text: "Percent"
+                  }));
+              $('#rule5').append($("<option/>", {
+                      value: "MB",
+                      text: "MB"
+                  }));
+              $("#rule5").show();
+          }
+      });
+  }
+
+  function show_Bubble() {
+      selected_rule = $("#rule6").find("option:selected").text();
+      $("#rule6").change(function() {
+          selected_rule = $("#rule6").find("option:selected").text();
+          $('#rule7').html('');
+          if (selected_rule == "Send Custom Message") {
+              $("#rule7").show();
+          }
+          else {
+              $("#rule7").hide();
+          }
+      });
+  }
+</script>
+</%def>

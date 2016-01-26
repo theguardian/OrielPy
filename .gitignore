@@ -1,11 +1,11 @@
 #  User Related   #
 ######################
 cache/*
-cache.db*
-orielpy.db
+*.db
+*.lock
 config.ini
 Logs/*
-data/images/server.png
+keys/*
 
 #  Compiled source   #
 ######################

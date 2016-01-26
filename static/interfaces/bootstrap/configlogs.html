@@ -1,0 +1,99 @@
+<%inherit file="base.html"/>
+<%!
+    import cherrystrap
+%>
+
+<%def name="headIncludes()">
+<title>${cherrystrap.APP_NAME}: ${title}</title>
+</%def>
+
+<%def name="body()">
+<h1>Add &amp; Remove Logs</h1>
+
+<form id="add_log_form">
+  <div class="row">
+    <div class="col-md-3 form-group">
+      <input type="text" name="program" value="" class="form-control" id="program" placeholder="Program Name">
+    </div>
+    <div class="col-md-6 form-group">
+      <input type="text" name="logpath" value="" class="form-control" id="logpath" placeholder="Log Path">
+    </div>
+    <div class="col-md-3 form-group">
+      <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span>&nbsp; Log</button>
+    </div>
+  </div>
+</form>
+
+<div class="row">
+  <table class="table table-striped" id="logsTable">
+    <th>Program</th>
+    <th>Log Path</th>
+    <th>Remove</th>
+  </table>
+</div>
+
+</%def>
+
+<%def name="javascriptIncludes()">
+<script>
+
+$(document).ready(function() {
+  loadLogs();
+});
+
+function loadLogs()
+  {
+    $.getJSON('/api/v1/logs?token=${cherrystrap.API_TOKEN}', function(data) {
+      var i=0;
+      $('#logsTable').html('');
+      $.each(data, function(key, value) {
+        $('#logsTable').append('<tr><td>'+data[i]['program']+'</td><td>'+data[i]['logpath']+'</td> \
+          <td><button id="'+data[i]['program']+'" class="btn btn-danger" onclick="removeLog(this)"> \
+          <span class="glyphicon glyphicon-minus"></span>&nbsp;  Log</button></td></tr>');
+        i++;
+      });
+    });
+  }
+
+function removeLog(object)
+  {
+    $.ajax({
+        url: "/api/v1/logs?token=${cherrystrap.API_TOKEN}&program="+object.id,
+        type: "DELETE",
+        beforeSend: function() {
+            $(".ajaxMsg").html('<div class="alert alert-warning"><img src="images/ajax-loader.gif"/></div>').show();
+        },
+        success: function(data) {
+          loadLogs();
+          var message = JSON.parse(data)
+          $(".ajaxMsg").html('<div class="alert alert-'+message['status']+'">'+message['message']+'</div>').show().fadeOut(5000);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            $(".ajaxMsg").html('<div class="alert alert-danger">'+textStatus+': '+errorThrown+'</div>').show().fadeOut(5000);
+        }
+      });
+  }
+
+  $("#add_log_form").submit(function() {
+    var formData = $("#add_log_form").serialize();
+    $.ajax({
+        url: "/api/v1/logs?token=${cherrystrap.API_TOKEN}",
+        type: "POST",
+        data: formData,
+        beforeSend: function() {
+            $(".ajaxMsg").html('<div class="alert alert-warning"><img src="images/ajax-loader.gif"/></div>').show();
+        },
+        success: function(data)
+        {
+            loadLogs();
+            var message = JSON.parse(data)
+            $(".ajaxMsg").html('<div class="alert alert-'+message['status']+'">'+message['message']+'</div>').show().fadeOut(5000);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            $(".ajaxMsg").html('<div class="alert alert-danger">'+textStatus+': '+errorThrown+'</div>').show().fadeOut(5000);
+        }
+    });
+    return false;
+  });
+</script>
+</%def>

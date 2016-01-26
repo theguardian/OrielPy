@@ -1,0 +1,324 @@
+<%inherit file="base.html"/>
+<%!
+	import cherrystrap
+%>
+
+<%def name="headIncludes()">
+<title>${cherrystrap.APP_NAME}: ${title}</title>
+<style>
+	.popover {
+	  max-width: 600px;
+	  }
+	.progress-label {
+    float: left;
+		min-width:130px;
+    margin-right: 1em;
+		}
+		.progress-label-sidebar {
+	    float: left;
+			min-width:100px;
+	    margin-right: 1em;
+			}
+</style>
+</%def>
+
+<%def name="body()">
+	<div class="row" style="margin-top:15px;">
+		<div id="vitals" class="col-md-3">
+			<div id="splash">
+				<img id="serverImg"src="images/server.png" data-toggle="popover"/>
+			</div>
+
+			<div id="diskStats">
+				%for disk in range(numDisks):
+				<div id="diskName${disk}" class="progress-label-sidebar">Internal Disk 1</div>
+				<div class="progress">
+					<div id="diskio${disk}" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em">
+						Idle
+					</div>
+				</div>
+				%endfor
+			</div>
+		</div>
+
+		<div id="metrics" class="col-md-9">
+
+			%for cpu in range(numCPUs):
+			<div id="cpuName${cpu}" class="progress-label">CPU ${cpu}</div>
+			<div class="progress">
+				<div id="cpuload${cpu}" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em">
+					0%
+				</div>
+			</div>
+			%endfor
+
+			%if fansTemps['cpuTemp'] != '0':
+			<div class="progress-label">CPU Temperature</div>
+			<div class="progress">
+				<div id="cpuTemp" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em">
+					0%
+				</div>
+			</div>
+			%endif
+
+			%if fansTemps['cpuFan'] != '0':
+			<div class="progress-label">CPU Fan Speed</div>
+			<div class="progress">
+				<div id="cpuFan" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em">
+					0%
+				</div>
+			</div>
+			%endif
+
+			%if fansTemps['sysTemp'] != '0':
+			<div class="progress-label">SYS Temperature</div>
+			<div class="progress">
+				<div id="sysTemp" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em">
+					0%
+				</div>
+			</div>
+			%endif
+
+			%if fansTemps['sysFan'] != '0':
+			<div class="progress-label">SYS Fan Speed</div>
+			<div class="progress">
+				<div id="sysFan" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em">
+					0%
+				</div>
+			</div>
+			%endif
+
+			<div class="progress-label">RAM Utilization</div>
+			<div class="progress">
+				<div id="ram" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em">
+					0%
+				</div>
+			</div>
+
+			<div class="progress-label">Swap Utilization</div>
+			<div class="progress">
+				<div id="swap" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em">
+					0%
+				</div>
+			</div>
+
+			%for partition in range(numPartitions):
+			<div id="partName${partition}" class="progress-label">Volume Name</div>
+			<div class="progress">
+				<div id="partition${partition}" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em">
+					0%
+				</div>
+			</div>
+			%endfor
+
+			<div class="progress-label">Network Rx Rate</div>
+			<div class="progress">
+				<div id="netRx" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em">
+					0%
+				</div>
+			</div>
+
+			<div class="progress-label">Network Tx Rate</div>
+			<div class="progress">
+				<div id="netTx" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em">
+					0%
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<div class="well col-md-12" style="margin-top:15px">
+		<div class="col-md-4 col-md-offset-4 input-group">
+			<div class="input-group-addon">Refresh:&nbsp;</div>
+			<select name="refresh_rate" class="form-control" id="refreshrate" onchange="setRefresh()">
+				<option value="0">Disable</option>
+				<option value="2">2</option>
+				<option value="5" selected="selected">5</option>
+				<option value="15">15</option>
+				<option value="30">30</option>
+				<option value="60">60</option>
+				<option value="300">300</option>
+				<option value="600">600</option>
+			</select>
+			<div class="input-group-addon">Seconds</div>
+		</div>
+	</div>
+</%def>
+
+<%def name="javascriptIncludes()">
+<script>
+	%if msg:
+		$(".alerts").html("<div class=\"alert alert-warning\">${msg}</div>").show();
+	%endif
+
+	$('#serverImg').popover({
+		trigger:'click',
+		html:'true',
+		placement:'bottom',
+		container:'body',
+		title:'<strong>CPU Specs</strong>',
+		content:"<strong>Model Name:</strong> ${staticData['model_name']}<br/> \
+						<strong>CPU Speed:</strong> ${staticData['cpu_MHz']} MHz<br/> \
+						<strong>Cache:</strong> ${staticData['cache_size']}"
+	})
+
+	function getDiskIO() {
+		$.getJSON('/api/v1/diskio?token=${cherrystrap.API_TOKEN}', function(data) {
+			$.each(data, function(i, item) {
+				$('#diskName'+i).empty().html(data[i].diskId);
+				$('#diskio'+i).removeClass('progress-bar-success');
+				if (data[i].status != "Idle") {
+					$('#diskio'+i).addClass('progress-bar-success');
+				}
+				$('#diskio'+i).attr('aria-valuenow', data[i].activity);
+				$('#diskio'+i).attr('style', 'min-width: 3em; width: '+data[i].activity+'%');
+				$('#diskio'+i).empty().html(data[i].status);
+			});
+		});
+	}
+
+	function getCPUload() {
+		$.getJSON('/api/v1/cpuload?token=${cherrystrap.API_TOKEN}', function(data) {
+	    $.each(data, function(i, item) {
+				$('#cpuload'+i).removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
+				$('#cpuload'+i).addClass(progressClass(data[i].cpuPercent));
+				$('#cpuload'+i).attr('aria-valuenow', data[i].cpuPercent);
+				$('#cpuload'+i).attr('style', 'min-width: 3em; width: '+data[i].cpuPercent+'%');
+				$('#cpuload'+i).empty().html(data[i].cpuPercent+'%');
+			});
+		});
+	}
+
+	function getSysFiles() {
+		$.getJSON('/api/v1/sysfiles?token=${cherrystrap.API_TOKEN}', function(data) {
+				$('#cpuTemp').removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
+				$('#cpuFan').removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
+				$('#sysTemp').removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
+				$('#sysFan').removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
+				$('#cpuTemp').addClass(progressClass(data.cpuTempPercent));
+				$('#cpuFan').addClass(progressClass(data.cpuFanPercent));
+				$('#sysTemp').addClass(progressClass(data.sysTempPercent));
+				$('#sysFan').addClass(progressClass(data.sysFanPercent));
+				$('#cpuTemp').attr('aria-valuenow', data.cpuTempPercent);
+				$('#cpuFan').attr('aria-valuenow', data.cpuFanPercent);
+				$('#sysTemp').attr('aria-valuenow', data.sysTempPercent);
+				$('#sysFan').attr('aria-valuenow', data.sysFanPercent);
+				$('#cpuTemp').attr('style', 'min-width: 3em; width: '+data.cpuTempPercent+'%');
+				$('#cpuFan').attr('style', 'min-width: 6em; width: '+data.cpuFanPercent+'%');
+				$('#sysTemp').attr('style', 'min-width: 3em; width: '+data.sysTempPercent+'%');
+				$('#sysFan').attr('style', 'min-width: 6em; width: '+data.sysFanPercent+'%');
+				$('#cpuTemp').empty().html(data.cpuTemp+'&#8451;');
+				$('#cpuFan').empty().html(data.cpuFan+' RPM');
+				$('#sysTemp').empty().html(data.sysTemp+'&#8451;');
+				$('#sysFan').empty().html(data.sysFan+' RPM');
+		});
+	}
+
+	function getMemLoad() {
+		$.getJSON('/api/v1/memload?token=${cherrystrap.API_TOKEN}', function(data) {
+				$('#ram').removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
+				$('#ram').addClass(progressClass(data.memPercent));
+				$('#ram').attr('aria-valuenow', data.memPercent);
+				$('#ram').attr('style', 'min-width: 8em; width: '+data.memPercent+'%');
+				$('#ram').empty().html(data.memFree+' MB Free');
+		});
+	}
+
+	function getSwapLoad() {
+		$.getJSON('/api/v1/swapload?token=${cherrystrap.API_TOKEN}', function(data) {
+				$('#swap').removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
+				$('#swap').addClass(progressClass(data.swapPercent));
+				$('#swap').attr('aria-valuenow', data.swapPercent);
+				$('#swap').attr('style', 'min-width: 8em; width: '+data.swapPercent+'%');
+				$('#swap').empty().html(data.swapFree+' MB Free');
+		});
+	}
+
+	function getPartitions() {
+		$.getJSON('/api/v1/partitions?token=${cherrystrap.API_TOKEN}', function(data) {
+	    $.each(data, function(i, item) {
+				$('#partition'+i).removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
+				$('#partition'+i).addClass(progressClass(data[i].percent));
+				$('#partition'+i).attr('aria-valuenow', data[i].percent);
+				$('#partition'+i).attr('style', 'min-width: 7em; width: '+data[i].percent+'%');
+				$('#partition'+i).empty().html(data[i].free+' Free');
+				$('#partName'+i).empty().html(data[i].mountpoint+' ('+data[i].filesystem+')');
+			});
+		});
+	}
+
+	function getNetworkLoad() {
+		$.getJSON('/api/v1/networkload?token=${cherrystrap.API_TOKEN}', function(data) {
+				$('#netRx').removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
+				$('#netTx').removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
+				$('#netRx').addClass(progressClass(data.downloadPercent));
+				$('#netTx').addClass(progressClass(data.uploadPercent));
+				$('#netRx').attr('aria-valuenow', data.downloadPercent);
+				$('#netTx').attr('aria-valuenow', data.uploadPercent);
+				$('#netRx').attr('style', 'min-width: 6em; width: '+data.downloadPercent+'%');
+				$('#netTx').attr('style', 'min-width: 6em; width: '+data.uploadPercent+'%');
+				$('#netRx').empty().html(data.downloadRate);
+				$('#netTx').empty().html(data.uploadRate);
+		});
+	}
+
+	var diskioTimer;
+	var cpuTimer;
+	var sysFilesTimer;
+	var memTimer;
+	var swapTimer;
+	var partitionTimer;
+	var networkTimer;
+	function setRefresh()
+	{
+		refreshrate = document.getElementById('refreshrate');
+		if(refreshrate != null) {
+			if(diskioTimer) {clearInterval(diskioTimer);}
+			if(cpuTimer) {clearInterval(cpuTimer);}
+			if(sysFilesTimer) {clearInterval(sysFilesTimer);}
+			if(memTimer) {clearInterval(memTimer);}
+			if(swapTimer) {clearInterval(swapTimer);}
+			if(partitionTimer) {clearInterval(partitionTimer);}
+			if(networkTimer) {clearInterval(networkTimer);}
+			if(refreshrate.value != 0) {
+				diskioTimer = setInterval(getDiskIO,1000*refreshrate.value);
+				cpuTimer = setInterval(getCPUload,1000*refreshrate.value);
+				sysFilesTimer = setInterval(getSysFiles,1000*refreshrate.value);
+				memTimer = setInterval(getMemLoad,1000*refreshrate.value);
+				swapTimer = setInterval(getSwapLoad,1000*refreshrate.value);
+				partitionTimer = setInterval(getPartitions,1000*refreshrate.value);
+				networkTimer = setInterval(getNetworkLoad,1000*refreshrate.value);
+			}
+		}
+	}
+
+	$(document).ready(function() {
+		setRefresh();
+		getDiskIO();
+		getCPUload();
+		getSysFiles();
+		getMemLoad();
+		getSwapLoad();
+		getPartitions();
+		getNetworkLoad();
+	});
+
+	function progressClass(percentage) {
+		if (percentage < 25) {
+			var newClass = "";
+		}
+		else if (percentage >= 25 && percentage < 50) {
+			var newClass = "progress-bar-success";
+		}
+		else if (percentage >= 50 && percentage < 75) {
+			var newClass = "progress-bar-warning";
+		}
+		else if (percentage >= 75) {
+			var newClass = "progress-bar-danger";
+		}
+		return newClass
+	}
+</script>
+</%def>

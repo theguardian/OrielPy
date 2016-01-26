@@ -6,34 +6,26 @@ import orielpy
 import json
 import collections
 
-from orielpy import database, logger, formatter, notifiers, subroutines
-from subroutines import subroutines
+from cherrystrap import database, logger, formatter
+from orielpy import notifiers
+from orielpy.subroutines import subroutines
 
 def health(notify=True):
 
 	health_list=[]
 	error_msg=0
-	myDB = database.DBConnection()
+	myDB = database.SQLite_DBConnection()
 	subcall = subroutines()
 
-	disk_json, ext_json = subcall.diskio_subroutine()
-	sysfiles_json = subcall.sysfiles_subroutine()
-	cpu_json, mem_json, swap_json, partition_json, networking_json, nw_json = subcall.dynamic_subroutine()
-	log_json = subcall.syslogs_subroutine()
+	json_disk = subcall.diskio_subroutine()
+	json_sysfiles = subcall.sysfiles_subroutine()
+	json_cpu = subcall.cpuload_subroutine()
+	json_mem = subcall.memload_subroutine()
+	json_swap = subcall.swapload_subroutine()
+	json_partition = subcall.partitions_subroutine()
+	json_networking = subcall.networkload_subroutine()
+	json_log = subcall.syslogs_subroutine()
 	#process_json = subcall.sysprocesses_subroutine()
-
-	json_disk = json.loads(disk_json)
-	json_ext = json.loads(ext_json)
-	json_sysfiles = json.loads(sysfiles_json)
-	json_cpu = json.loads(cpu_json)
-	json_mem = json.loads(mem_json)
-	json_swap = json.loads(swap_json)
-	json_partition = json.loads(partition_json)
-	json_networking = json.loads(networking_json)
-	json_nw = json.loads(nw_json)
-	json_log = json.loads(log_json)
-	#json_process = json.loads(process_json)
-
 
 	rulelist = myDB.select('SELECT * from rules')
 	for entries in rulelist:
@@ -46,18 +38,18 @@ def health(notify=True):
 		custom_message = entries['rule7']
 		if flag == "Log File":
 			try:
-				for key, value in json_log[0].iteritems():
-					if key == program:
-						prog_name = key
-						log_string = value
-				if condition == "Contains String":
-					if comparison_value in log_string:
-						messaging(message_rule, custom_message, prog_name+" log file contains ["+comparison_value+"]", notify, health_list)
-						error_msg+=1
-				elif condition == "Does Not Contain String":
-					if comparison_value not in log_string:
-						messaging(message_rule, custom_message, prog_name+" log file does not contain ["+comparison_value+"]", notify, health_list)
-						error_msg+=1
+				for logline in json_log:
+					if logline['program'] == program:
+						prog_name = logline['program']
+						log_string = logline['logline']
+						if condition == "Contains String":
+							if comparison_value in log_string:
+								messaging(message_rule, custom_message, prog_name+" log file contains ["+comparison_value+"]", notify, health_list)
+								error_msg+=1
+						elif condition == "Does Not Contain String":
+							if comparison_value not in log_string:
+								messaging(message_rule, custom_message, prog_name+" log file does not contain ["+comparison_value+"]", notify, health_list)
+								error_msg+=1
 			except:
 				error_msg+=1
 				logger.error("%s" % "There is a problem finding health of log file/s")
@@ -67,7 +59,7 @@ def health(notify=True):
 				cpu_index = 0
 				cpu_arr = []
 				while cpu_index < len(json_cpu):
-					cpu_arr.append(json_cpu[cpu_index]['cpu_percent'])
+					cpu_arr.append(json_cpu[cpu_index]['cpuPercent'])
 					cpu_index+=1
 				cpu_value = max(cpu_arr)
 				try:
@@ -89,10 +81,10 @@ def health(notify=True):
 
 		elif flag == "CPU Temperature":
 			try:
-				for key, value in json_sysfiles[0].iteritems():
-					if key == "cpu1_temp":
+				for key, value in json_sysfiles.iteritems():
+					if key == "cpuTemp":
 						cpu_temp = value
-					elif key == "cpu1_temp_percent":
+					elif key == "cpuTempPercent":
 						cpu_temp_percent = value
 				try:
 					comparison_value = int(comparison_value)
@@ -122,10 +114,10 @@ def health(notify=True):
 
 		elif flag == "System Temperature":
 			try:
-				for key, value in json_sysfiles[0].iteritems():
-					if key == "sys_temp":
+				for key, value in json_sysfiles.iteritems():
+					if key == "sysTemp":
 						sys_temp = value
-					elif key == "sys_temp_percent":
+					elif key == "sysTempPercent":
 						sys_temp_percent = value
 				try:
 					comparison_value = int(comparison_value)
@@ -155,10 +147,10 @@ def health(notify=True):
 
 		elif flag == "CPU Fan Speed":
 			try:
-				for key, value in json_sysfiles[0].iteritems():
-					if key == "cpu_fan":
+				for key, value in json_sysfiles.iteritems():
+					if key == "cpuFan":
 						cpu_fan = value
-					elif key == "cpu_fan_percent":
+					elif key == "cpuFanPercent":
 						cpu_fan_percent = value
 				try:
 					comparison_value = int(comparison_value)
@@ -188,10 +180,10 @@ def health(notify=True):
 
 		elif flag == "System Fan Speed":
 			try:
-				for key, value in json_sysfiles[0].iteritems():
-					if key == "sys_fan":
+				for key, value in json_sysfiles.iteritems():
+					if key == "sysFan":
 						sys_fan = value
-					elif key == "sys_fan_percent":
+					elif key == "sysFanPercent":
 						sys_fan_percent = value
 				try:
 					comparison_value = int(comparison_value)
@@ -221,13 +213,13 @@ def health(notify=True):
 
 		elif flag == "Network Rx Rate":
 			try:
-				for key, value in json_networking[0].iteritems():
-					if key == "download_rate":
+				for key, value in json_networking.iteritems():
+					if key == "downloadRate":
 						if "kB/s" in value:
 							rx_rate = 0
 						else:
 							rx_rate = value.replace(" MB/s","")
-					elif key == "download_percent":
+					elif key == "downloadPercent":
 						rx_percent = value
 				try:
 					comparison_value = float(comparison_value)
@@ -257,13 +249,13 @@ def health(notify=True):
 
 		elif flag == "Network Tx Rate":
 			try:
-				for key, value in json_networking[0].iteritems():
-					if key == "upload_rate":
+				for key, value in json_networking.iteritems():
+					if key == "uploadRate":
 						if "kB/s" in value:
 							tx_rate = 0
 						else:
 							tx_rate = value.replace(" MB/s","")
-					elif key == "upload_percent":
+					elif key == "uploadPercent":
 						tx_percent = value
 				try:
 					comparison_value = float(comparison_value)
@@ -293,10 +285,10 @@ def health(notify=True):
 
 		elif flag == "RAM Free Space":
 			try:
-				for key, value in json_mem[0].iteritems():
-					if key == "mem_free":
+				for key, value in json_mem.iteritems():
+					if key == "memFree":
 						mem_free = value
-					elif key == "mem_percent":
+					elif key == "memPercent":
 						mem_percent = 100-int(value)
 				try:
 					comparison_value = int(comparison_value)
@@ -326,10 +318,10 @@ def health(notify=True):
 
 		elif flag == "Swap Memory Free Space":
 			try:
-				for key, value in json_swap[0].iteritems():
-					if key == "swap_free":
+				for key, value in json_swap.iteritems():
+					if key == "swapFree":
 						swap_free = value
-					elif key == "swap_percent":
+					elif key == "swapPercent":
 						swap_percent = 100-int(value)
 				try:
 					comparison_value = int(comparison_value)
@@ -410,7 +402,7 @@ def health(notify=True):
 			try:
 				disk_index = 0
 				while disk_index < len(json_disk):
-					disk = json_disk[disk_index]['disk_id']
+					disk = json_disk[disk_index]['diskId']
 					if disk == program:
 						disk_status = json_disk[disk_index]['status']
 						if condition == "Is":
@@ -423,20 +415,6 @@ def health(notify=True):
 								error_msg+=1
 					disk_index+=1
 
-				ext_index = 0
-				while ext_index < len(json_ext):
-					ext = json_ext[ext_index]['disk_id']
-					if ext == program:
-						ext_status = json_ext[ext_index]['status']
-						if condition == "Is":
-							if comparison_value == ext_status:
-								messaging(message_rule, custom_message, ext+" is "+str(comparison_value), notify, health_list)
-								error_msg+=1
-						elif condition == "Is Not":
-							if comparison_value != ext_status:
-								messaging(message_rule, custom_message, ext+" is not "+str(comparison_value), notify, health_list)
-								error_msg+=1
-					ext_index+=1
 			except:
 				error_msg+=1
 				logger.error("%s" % "There is a problem finding health of disk status")
@@ -446,14 +424,15 @@ def health(notify=True):
 
 	if error_msg == 0:
 		health_array = collections.defaultdict()
-		health_array['status'] = "OK"
+		health_array['status'] = "success"
 		health_list.append(health_array)
 	else:
 		health_array = collections.defaultdict()
-		health_array['status'] = "WARN"
+		health_array['status'] = "warning"
 		health_list.append(health_array)
 
 	health_json = json.dumps(health_list)
+
 	return health_json
 
 def messaging(message_rule=None, custom_message=None, notify_msg=None, notify=False, health_list=None):

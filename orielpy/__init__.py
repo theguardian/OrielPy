@@ -1,395 +1,315 @@
-from __future__ import with_statement
-
-import os, sys, subprocess, threading, cherrypy, sqlite3
-
-import datetime
-
-from lib.configobj import ConfigObj
-from lib.apscheduler.scheduler import Scheduler
-
-import threading
-
-from orielpy import logger, generator
-
-FULL_PATH = None
-PROG_DIR = None
-
-ARGS = None
-SIGNAL = None
-
-LOGLEVEL = 1
-DAEMON = False
-PIDFILE = None
-
-SYS_ENCODING = None
-
-SCHED = Scheduler()
-
-INIT_LOCK = threading.Lock()
-__INITIALIZED__ = False
-started = False
-
-DATADIR = None
-DBFILE=None
-CONFIGFILE = None
-CFG = None
-
-LOGDIR = None
-LOGLIST = []
-
-SERVER_NAME = None
-HTTP_HOST = None
-HTTP_PORT = None
-HTTP_USER = None
-HTTP_PASS = None
-HTTP_ROOT = None
-HTTP_LOOK = None
-VERIFY_SSL = None
-LAUNCH_BROWSER = False
-NOTIFICATION_FREQUENCY = 0
-NOTIFICATION_UNITS = None
-NOTIFY_NOMINAL = False
+from cherrystrap import logger
+from cherrystrap.configCheck import CheckSection, check_setting_int, check_setting_bool, check_setting_str
 
 CPU_INFO_PATH = None
 PSEUDOFILE_FOLDER = None
-NUM_INTERNAL_DISK_CAPACITY = None
+NUM_INTERNAL_DISK_CAPACITY = 0
 SYS_FAN_FILE = None
-SYS_FAN_MIN = None
-SYS_FAN_MAX = None
+SYS_FAN_MIN = 0
+SYS_FAN_MAX = 0
 CPU_FAN_FILE = None
-CPU_FAN_MIN = None
-CPU_FAN_MAX = None
+CPU_FAN_MIN = 0
+CPU_FAN_MAX = 0
 CPU_TEMP_FILE = None
-CPU_TEMP_MIN = None
-CPU_TEMP_MAX = None
+CPU_TEMP_MIN = 0
+CPU_TEMP_MAX = 0
 SYS_TEMP_FILE = None
-SYS_TEMP_MIN = None
-SYS_TEMP_MAX = None
-NIC_READ_MAX = None
-NIC_WRITE_MAX = None
-INTERNAL_DISK_MAX_RATE = None
-EXTERNAL_DISK_MAX_RATE = None
+SYS_TEMP_MIN = 0
+SYS_TEMP_MAX = 0
+NIC_READ_MAX = 0
+NIC_WRITE_MAX = 0
+INTERNAL_DISK_MAX_RATE = 0
+EXTERNAL_DISK_MAX_RATE = 0
 
-USE_TWITTER = False
-TWITTER_USERNAME = None
-TWITTER_PASSWORD = None
-TWITTER_PREFIX = 'OrielPy'
+NOTIFICATION_TYPE = None
+NOTIFICATION_FREQUENCY = 0
+NOTIFICATION_UNITS = None
+NOTIFICATION_CRON = None
+NOTIFY_NOMINAL = False
 
+TWITTER_ENABLED = False
+TWITTER_TOKEN = None
+TWITTER_SECRET = None
+TWITTER_PREFIX = None
 
-def CheckSection(sec):
-    """ Check if INI section exists, if not create it """
-    try:
-        CFG[sec]
-        return True
-    except:
-        CFG[sec] = {}
-        return False
+def injectVarCheck(CFG):
 
-#################################################################################
-## Check_setting_int                                                            #
-#################################################################################
-#def minimax(val, low, high):
-#    """ Return value forced within range """
-#    try:
-#        val = int(val)
-#    except:
-#        val = 0
-#    if val < low:
-#        return low
-#    if val > high:
-#        return high
-#    return val
+    global CPU_INFO_PATH, PSEUDOFILE_FOLDER, NUM_INTERNAL_DISK_CAPACITY, \
+    SYS_FAN_FILE, SYS_FAN_MIN, SYS_FAN_MAX, CPU_FAN_FILE, CPU_FAN_MIN, \
+    CPU_FAN_MAX, CPU_TEMP_FILE, CPU_TEMP_MIN, CPU_TEMP_MAX, SYS_TEMP_FILE, \
+    SYS_TEMP_MIN, SYS_TEMP_MAX, NIC_READ_MAX, NIC_WRITE_MAX, \
+    INTERNAL_DISK_MAX_RATE, EXTERNAL_DISK_MAX_RATE, \
+    NOTIFICATION_TYPE, NOTIFICATION_FREQUENCY, NOTIFICATION_UNITS, \
+    NOTIFICATION_CRON, NOTIFY_NOMINAL, \
+    TWITTER_ENABLED, TWITTER_TOKEN, TWITTER_SECRET, TWITTER_PREFIX
 
-################################################################################
-# Check_setting_int                                                            #
-################################################################################
-def check_setting_int(config, cfg_name, item_name, def_val):
-    try:
-        my_val = int(config[cfg_name][item_name])
-    except:
-        my_val = def_val
+    CheckSection(CFG, 'System')
+    CheckSection(CFG, 'Notifications')
+
+    CPU_INFO_PATH = check_setting_str(CFG, 'System', 'cpuInfoPath', '/proc/cpuinfo')
+    PSEUDOFILE_FOLDER = check_setting_str(CFG, 'System', 'pseudofileFolder', '/sys/devices/virtual/thermal/thermal_zone0/')
+    NUM_INTERNAL_DISK_CAPACITY = check_setting_int(CFG, 'System', 'numIntDiskCap', 1)
+    SYS_FAN_FILE = check_setting_str(CFG, 'System', 'sysFanFile', '')
+    SYS_FAN_MIN = check_setting_int(CFG, 'System', 'sysFanMin', 0)
+    SYS_FAN_MAX = check_setting_int(CFG, 'System', 'sysFanMax', 5000)
+    CPU_FAN_FILE = check_setting_str(CFG, 'System', 'cpuFanFile', '')
+    CPU_FAN_MIN = check_setting_int(CFG, 'System', 'cpuFanMin', 0)
+    CPU_FAN_MAX = check_setting_int(CFG, 'System', 'cpuFanMax', 5000)
+    CPU_TEMP_FILE = check_setting_str(CFG, 'System', 'cpuTempFile', 'temp')
+    CPU_TEMP_MIN = check_setting_int(CFG, 'System', 'cpuTempMin', 0)
+    CPU_TEMP_MAX = check_setting_int(CFG, 'System', 'cpuTempMax', 100)
+    SYS_TEMP_FILE = check_setting_str(CFG, 'System', 'sysTempFile', '')
+    SYS_TEMP_MIN = check_setting_int(CFG, 'System', 'sysTempMin', 0)
+    SYS_TEMP_MAX = check_setting_int(CFG, 'System', 'sysTempMax', 100)
+    NIC_READ_MAX = check_setting_int(CFG, 'System', 'nicReadMax', 200)
+    NIC_WRITE_MAX = check_setting_int(CFG, 'System', 'nicWriteMax', 200)
+    INTERNAL_DISK_MAX_RATE = check_setting_int(CFG, 'System', 'intDiskMaxRate', 200)
+    EXTERNAL_DISK_MAX_RATE = check_setting_int(CFG, 'System', 'extDiskMaxRate', 200)
+
+    NOTIFICATION_TYPE = check_setting_str(CFG, 'Notifications', 'notificationType', 'disabled')
+    NOTIFICATION_FREQUENCY = check_setting_int(CFG, 'Notifications', 'notificationFrequency', 0)
+    NOTIFICATION_UNITS = check_setting_str(CFG, 'Notifications', 'notificationUnits', 'hours')
+    NOTIFICATION_CRON = check_setting_str(CFG, 'Notifications', 'notificationCron', '0 5 * * 1')
+    NOTIFY_NOMINAL = check_setting_bool(CFG, 'Notifications', 'notifyNominal', False)
+
+    TWITTER_ENABLED = check_setting_bool(CFG, 'Notifications', 'twitterEnabled', False)
+    TWITTER_TOKEN = check_setting_str(CFG, 'Notifications', 'twitterToken', '')
+    TWITTER_SECRET = check_setting_str(CFG, 'Notifications', 'twitterSecret', '')
+    TWITTER_PREFIX = check_setting_str(CFG, 'Notifications', 'twitterPrefix', 'OrielPy')
+
+def injectDbSchema():
+
+    schema = {}
+    schema['logpaths'] = {} #this is a table name
+    schema['logpaths']['Program'] = 'TEXT' #this is a column name and format
+    schema['logpaths']['LogPath'] = 'TEXT'
+
+    schema['rules'] = {}
+    schema['rules']['rule1'] = 'TEXT'
+    schema['rules']['rule2'] = 'TEXT'
+    schema['rules']['rule3'] = 'TEXT'
+    schema['rules']['rule4'] = 'TEXT'
+    schema['rules']['rule5'] = 'TEXT'
+    schema['rules']['rule6'] = 'TEXT'
+    schema['rules']['rule7'] = 'TEXT'
+
+    return schema
+
+def injectApiConfigGet():
+
+    injection = {
+        "system": {
+            "cpuInfoPath": CPU_INFO_PATH,
+            "pseudofileFolder": PSEUDOFILE_FOLDER,
+            "numIntDiskCap": NUM_INTERNAL_DISK_CAPACITY,
+            "sysFanFile": SYS_FAN_FILE,
+            "sysFanMin": SYS_FAN_MIN,
+            "sysFanMax": SYS_FAN_MAX,
+            "cpuFanFile": CPU_FAN_FILE,
+            "cpuFanMin": CPU_FAN_MIN,
+            "cpuFanMax": CPU_FAN_MAX,
+            "cpuTempFile": CPU_TEMP_FILE,
+            "cpuTempMin": CPU_TEMP_MIN,
+            "cpuTempMax": CPU_TEMP_MAX,
+            "sysTempFile": SYS_TEMP_FILE,
+            "sysTempMin": SYS_TEMP_MIN,
+            "sysTempMax": SYS_TEMP_MAX,
+            "nicReadMax": NIC_READ_MAX,
+            "nicWriteMax": NIC_WRITE_MAX,
+            "intDiskMaxRate": INTERNAL_DISK_MAX_RATE,
+            "extDiskMaxRate": EXTERNAL_DISK_MAX_RATE
+        },
+        "notifications": {
+            "notificationType": NOTIFICATION_TYPE,
+            "notificationFrequency": NOTIFICATION_FREQUENCY,
+            "notificationUnits": NOTIFICATION_UNITS,
+            "notificationCron": NOTIFICATION_CRON,
+            "notifyNominal": NOTIFY_NOMINAL,
+            "twitterEnabled": TWITTER_ENABLED,
+            "twitterToken": TWITTER_TOKEN,
+            "twitterSecret": TWITTER_SECRET,
+            "twitterPrefix": TWITTER_PREFIX
+        }
+    }
+
+    return injection
+
+def injectApiConfigPut(kwargs, errorList):
+    global CPU_INFO_PATH, PSEUDOFILE_FOLDER, NUM_INTERNAL_DISK_CAPACITY, \
+    SYS_FAN_FILE, SYS_FAN_MIN, SYS_FAN_MAX, CPU_FAN_FILE, CPU_FAN_MIN, \
+    CPU_FAN_MAX, CPU_TEMP_FILE, CPU_TEMP_MIN, CPU_TEMP_MAX, SYS_TEMP_FILE, \
+    SYS_TEMP_MIN, SYS_TEMP_MAX, NIC_READ_MAX, NIC_WRITE_MAX, \
+    INTERNAL_DISK_MAX_RATE, EXTERNAL_DISK_MAX_RATE, \
+    NOTIFICATION_TYPE, NOTIFICATION_FREQUENCY, NOTIFICATION_UNITS, \
+    NOTIFICATION_CRON, NOTIFY_NOMINAL, \
+    TWITTER_ENABLED, TWITTER_TOKEN, TWITTER_SECRET, TWITTER_PREFIX
+
+    if 'cpuInfoPath' in kwargs:
+        CPU_INFO_PATH = kwargs.pop('cpuInfoPath', '/proc/cpuinfo')
+    if 'pseudofileFolder' in kwargs:
+        PSEUDOFILE_FOLDER = kwargs.pop('pseudofileFolder', '/sys/devices/virtual/thermal/thermal_zone0/')
+    if 'numIntDiskCap' in kwargs:
         try:
-            config[cfg_name][item_name] = my_val
+            NUM_INTERNAL_DISK_CAPACITY = int(kwargs.pop('numIntDiskCap', 1))
         except:
-            config[cfg_name] = {}
-            config[cfg_name][item_name] = my_val
-    logger.debug(item_name + " -> " + str(my_val))
-    return my_val
-
-#################################################################################
-## Check_setting_float                                                          #
-#################################################################################
-##def check_setting_float(config, cfg_name, item_name, def_val):
-##    try:
-##        my_val = float(config[cfg_name][item_name])
-##    except:
-##        my_val = def_val
-##        try:
-##            config[cfg_name][item_name] = my_val
-##        except:
-##            config[cfg_name] = {}
-##            config[cfg_name][item_name] = my_val
-
-##    return my_val
-
-################################################################################
-# Check_setting_str                                                            #
-################################################################################
-def check_setting_str(config, cfg_name, item_name, def_val, log=True):
-    try:
-        my_val = config[cfg_name][item_name]
-    except:
-        my_val = def_val
+            NUM_INTERNAL_DISK_CAPACITY = 1
+            errorList.append("numIntDiskCap must be an integer")
+            kwargs.pop('numIntDiskCap', 1)
+    if 'sysFanFile' in kwargs:
+        SYS_FAN_FILE = kwargs.pop('sysFanFile', '')
+    if 'sysFanMin' in kwargs:
         try:
-            config[cfg_name][item_name] = my_val
+            SYS_FAN_MIN = int(kwargs.pop('sysFanMin', 0))
         except:
-            config[cfg_name] = {}
-            config[cfg_name][item_name] = my_val
-
-    if log:
-        logger.debug(item_name + " -> " + my_val)
-    else:
-        logger.debug(item_name + " -> ******")
-
-    return my_val
-
-def initialize():
-
-    with INIT_LOCK:
-
-        global __INITIALIZED__, FULL_PATH, PROG_DIR, LOGLEVEL, DAEMON, DATADIR, CONFIGFILE, CFG, LOGDIR, SERVER_NAME, HTTP_HOST, HTTP_PORT, HTTP_USER, HTTP_PASS, HTTP_ROOT, HTTP_LOOK, \
-        VERIFY_SSL, LAUNCH_BROWSER, \
-        NOTIFY_NOMINAL, CPU_INFO_PATH, PSEUDOFILE_FOLDER, NUM_INTERNAL_DISK_CAPACITY, SYS_FAN_FILE, SYS_FAN_MIN, SYS_FAN_MAX, CPU_FAN_FILE, CPU_FAN_MIN, CPU_FAN_MAX, \
-        CPU_TEMP_FILE, CPU_TEMP_MIN, CPU_TEMP_MAX, SYS_TEMP_FILE, SYS_TEMP_MIN, SYS_TEMP_MAX, NIC_READ_MAX, NIC_WRITE_MAX, INTERNAL_DISK_MAX_RATE, \
-        EXTERNAL_DISK_MAX_RATE, USE_TWITTER, TWITTER_USERNAME, TWITTER_PASSWORD, TWITTER_PREFIX, NOTIFICATION_FREQUENCY, NOTIFICATION_UNITS
-
-        if __INITIALIZED__:
-            return False
-
-        CheckSection('General')
-        CheckSection('Server')
-        CheckSection('Twitter')
-
+            SYS_FAN_MIN = 0
+            errorList.append("sysFanMin must be an integer")
+            kwargs.pop('sysFanMin', 0)
+    if 'sysFanMax' in kwargs:
         try:
-            HTTP_PORT = check_setting_int(CFG, 'General', 'http_port', 5151)
+            SYS_FAN_MAX = int(kwargs.pop('sysFanMax', 5000))
         except:
-            HTTP_PORT = 5151
-
-        if HTTP_PORT < 21 or HTTP_PORT > 65535:
-            HTTP_PORT = 5151
-
-        SERVER_NAME = check_setting_str(CFG, 'General', 'server_name', 'Server')
-        HTTP_HOST = check_setting_str(CFG, 'General', 'http_host', '0.0.0.0')
-        HTTP_USER = check_setting_str(CFG, 'General', 'http_user', '')
-        HTTP_PASS = check_setting_str(CFG, 'General', 'http_pass', '')
-        HTTP_ROOT = check_setting_str(CFG, 'General', 'http_root', '')
-        HTTP_LOOK = check_setting_str(CFG, 'General', 'http_look', 'default')
-        VERIFY_SSL = bool(check_setting_int(CFG, 'General', 'verify_ssl', 1))
-        LAUNCH_BROWSER = bool(check_setting_int(CFG, 'General', 'launch_browser', 0))
-        LOGDIR = check_setting_str(CFG, 'General', 'logdir', '')
-        NOTIFICATION_FREQUENCY = int(check_setting_int(CFG, 'General', 'notification_frequency', 0))
-        NOTIFICATION_UNITS = check_setting_str(CFG, 'General', 'notification_units', '')
-        NOTIFY_NOMINAL = bool(check_setting_int(CFG, 'General', 'notify_nominal', 0))
-
-        CPU_INFO_PATH = check_setting_str(CFG, 'Server', 'cpu_info_path', '/proc/cpuinfo')
-        PSEUDOFILE_FOLDER = check_setting_str(CFG, 'Server', 'pseudofile_folder', '/sys/devices/virtual/thermal/thermal_zone0/')
-        NUM_INTERNAL_DISK_CAPACITY = int(check_setting_str(CFG, 'Server', 'num_internal_disk_capacity', '0'))
-        SYS_FAN_FILE = check_setting_str(CFG, 'Server', 'sys_fan_file', '')
-        SYS_FAN_MIN = int(check_setting_str(CFG, 'Server', 'sys_fan_min', '0'))
-        SYS_FAN_MAX = int(check_setting_str(CFG, 'Server', 'sys_fan_max', '5000'))
-        CPU_FAN_FILE = check_setting_str(CFG, 'Server', 'cpu_fan_file', '')
-        CPU_FAN_MIN = int(check_setting_str(CFG, 'Server', 'cpu_fan_min', '0'))
-        CPU_FAN_MAX = int(check_setting_str(CFG, 'Server', 'cpu_fan_max', '5000'))
-        CPU_TEMP_FILE = check_setting_str(CFG, 'Server', 'cpu_temp_file', 'temp')
-        CPU_TEMP_MIN = int(check_setting_str(CFG, 'Server', 'cpu_temp_min', '0'))
-        CPU_TEMP_MAX = int(check_setting_str(CFG, 'Server', 'cpu_temp_max', '100'))
-        SYS_TEMP_FILE = check_setting_str(CFG, 'Server', 'sys_temp_file', '')
-        SYS_TEMP_MIN = int(check_setting_str(CFG, 'Server', 'sys_temp_min', '0'))
-        SYS_TEMP_MAX = int(check_setting_str(CFG, 'Server', 'sys_temp_max', '100'))
-        NIC_READ_MAX = int(check_setting_str(CFG, 'Server', 'nic_read_max', '200'))
-        NIC_WRITE_MAX = int(check_setting_str(CFG, 'Server', 'nic_write_max', '200'))
-        INTERNAL_DISK_MAX_RATE = int(check_setting_str(CFG, 'Server', 'internal_disk_max_rate', '200'))
-        EXTERNAL_DISK_MAX_RATE = int(check_setting_str(CFG, 'Server', 'external_disk_max_rate', '200'))
-
-        USE_TWITTER = bool(check_setting_int(CFG, 'Twitter', 'use_twitter', 0))
-        TWITTER_USERNAME = check_setting_str(CFG, 'Twitter', 'twitter_username', '')
-        TWITTER_PASSWORD = check_setting_str(CFG, 'Twitter', 'twitter_password', '')
-        TWITTER_PREFIX = check_setting_str(CFG, 'Twitter', 'twitter_prefix', 'OrielPy')
-
-
-        if not LOGDIR:
-            LOGDIR = os.path.join(DATADIR, 'Logs')
-
-        # Put the cache dir in the data dir for now
-        CACHEDIR = os.path.join(DATADIR, 'cache')
-        if not os.path.exists(CACHEDIR):
-            try:
-                os.makedirs(CACHEDIR)
-            except OSError:
-                logger.error('Could not create cachedir. Check permissions of: ' + DATADIR)
-
-        # Create logdir
-        if not os.path.exists(LOGDIR):
-            try:
-                os.makedirs(LOGDIR)
-            except OSError:
-                if LOGLEVEL:
-                    print LOGDIR + ":"
-                    print ' Unable to create folder for logs. Only logging to console.'
-
-        # Start the logger, silence console logging if we need to
-        logger.orielpy_log.initLogger(loglevel=LOGLEVEL)
-
-        # Initialize the database
+            SYS_FAN_MAX = 5000
+            errorList.append("sysFanMax must be an integer")
+            kwargs.pop('sysFanMax', 5000)
+    if 'cpuFanFile' in kwargs:
+        CPU_FAN_FILE = kwargs.pop('cpuFanFile', None)
+    if 'cpuFanMin' in kwargs:
         try:
-            dbcheck()
-        except Exception, e:
-            logger.error("Can't connect to the database: %s" % e)
+            CPU_FAN_MIN = int(kwargs.pop('cpuFanMin', 0))
+        except:
+            CPU_FAN_MIN = 0
+            errorList.append("cpuFanMin must be an integer")
+            kwargs.pop('cpuFanMin', 0)
+    if 'cpuFanMax' in kwargs:
+        try:
+            CPU_FAN_MAX = int(kwargs.pop('cpuFanMax', 5000))
+        except:
+            CPU_FAN_MAX = 5000
+            errorList.append("cpuFanMax must be an integer")
+            kwargs.pop('cpuFanMax', 5000)
+    if 'cpuTempFile' in kwargs:
+        CPU_TEMP_FILE = kwargs.pop('cpuTempFile', 'temp')
+    if 'cpuTempMin' in kwargs:
+        try:
+            CPU_TEMP_MIN = int(kwargs.pop('cpuTempMin', 0))
+        except:
+            CPU_TEMP_MIN = 0
+            errorList.append("cpuTempMin must be an integer")
+            kwargs.pop('cpuTempMin', 0)
+    if 'cpuTempMax' in kwargs:
+        try:
+            CPU_TEMP_MAX = int(kwargs.pop('cpuTempMax', 100))
+        except:
+            CPU_TEMP_MAX = 100
+            errorList.append("cpuTempMax must be an integer")
+            kwargs.pop('cpuTempMax', 100)
+    if 'sysTempFile' in kwargs:
+        SYS_TEMP_FILE = kwargs.pop('sysTempFile', None)
+    if 'sysTempMin' in kwargs:
+        try:
+            SYS_TEMP_MIN = int(kwargs.pop('sysTempMin', 0))
+        except:
+            SYS_TEMP_MIN = 0
+            errorList.append("sysTempMin must be an integer")
+            kwargs.pop('sysTempMin', 0)
+    if 'sysTempMax' in kwargs:
+        try:
+            SYS_TEMP_MAX = int(kwargs.pop('sysTempMax', 100))
+        except:
+            SYS_TEMP_MAX = 100
+            errorList.append("sysTempMax must be an integer")
+            kwargs.pop('sysTempMax', 100)
+    if 'nicReadMax' in kwargs:
+        try:
+            NIC_READ_MAX = int(kwargs.pop('nicReadMax', 200))
+        except:
+            NIC_READ_MAX = 200
+            errorList.append("nicReadMax must be an integer")
+            kwargs.pop('nicReadMax', 200)
+    if 'nicWriteMax' in kwargs:
+        try:
+            NIC_WRITE_MAX = int(kwargs.pop('nicWriteMax', 200))
+        except:
+            NIC_WRITE_MAX = 200
+            errorList.append("nicWriteMax must be an integer")
+            kwargs.pop('nicWriteMax', 0)
+    if 'intDiskMaxRate' in kwargs:
+        try:
+            INTERNAL_DISK_MAX_RATE = int(kwargs.pop('intDiskMaxRate', 200))
+        except:
+            INTERNAL_DISK_MAX_RATE = 200
+            errorList.append("intDiskMaxRate must be an integer")
+            kwargs.pop('intDiskMaxRate', 200)
+    if 'extDiskMaxRate' in kwargs:
+        try:
+            EXTERNAL_DISK_MAX_RATE = int(kwargs.pop('extDiskMaxRate', 200))
+        except:
+            EXTERNAL_DISK_MAX_RATE = 200
+            errorList.append("extDiskMaxRate must be an integer")
+            kwargs.pop('extDiskMaxRate', 200)
+    if 'notificationType' in kwargs:
+        NOTIFICATION_TYPE = kwargs.pop('notificationType', 'disabled')
+    if 'notificationFrequency' in kwargs:
+        try:
+            NOTIFICATION_FREQUENCY = int(kwargs.pop('notificationFrequency', 0))
+        except:
+            NOTIFICATION_FREQUENCY = 0
+            errorList.append("notificationFrequency must be an integer")
+            kwargs.pop('notificationFrequency', 0)
+    if 'notificationUnits' in kwargs:
+        NOTIFICATION_UNITS = kwargs.pop('notificationUnits', 'hours')
+    if 'notificationCron' in kwargs:
+        NOTIFICATION_CRON = kwargs.pop('notificationCron', '0 5 * * 1')
+    if 'notifyNominal' in kwargs:
+        NOTIFY_NOMINAL = kwargs.pop('notifyNominal', False) == 'true'
+    elif 'notifyNominalHidden' in kwargs:
+        NOTIFY_NOMINAL = kwargs.pop('notifyNominalHidden', False) == 'true'
+    if 'twitterEnabled' in kwargs:
+        TWITTER_ENABLED = kwargs.pop('twitterEnabled', False) == 'true'
+    elif 'twitterEnabledHidden' in kwargs:
+        TWITTER_ENABLED = kwargs.pop('twitterEnabledHidden', False) == 'true'
+    if 'twitter_key' in kwargs:
+        kwargs.pop('twitter_key', '')
+    if 'twitterToken' in kwargs:
+        TWITTER_TOKEN = kwargs.pop('twitterToken', '')
+    if 'twitterSecret' in kwargs:
+        TWITTER_SECRET = kwargs.pop('twitterSecret', '')
+    if 'twitterPrefix' in kwargs:
+        TWITTER_PREFIX = kwargs.pop('twitterPrefix', 'OrielPy')
 
-        __INITIALIZED__ = True
-        return True
+    return kwargs, errorList
 
-def daemonize():
-    """
-    Fork off as a daemon
-    """
+def injectVarWrite(new_config):
+    new_config['System'] = {}
+    new_config['System']['cpuInfoPath'] = CPU_INFO_PATH
+    new_config['System']['pseudofileFolder'] = PSEUDOFILE_FOLDER
+    new_config['System']['numIntDiskCap'] = NUM_INTERNAL_DISK_CAPACITY
+    new_config['System']['sysFanFile'] = SYS_FAN_FILE
+    new_config['System']['sysFanMin'] = SYS_FAN_MIN
+    new_config['System']['sysFanMax'] = SYS_FAN_MAX
+    new_config['System']['cpuFanFile'] = CPU_FAN_FILE
+    new_config['System']['cpuFanMin'] = CPU_FAN_MIN
+    new_config['System']['cpuFanMax'] = CPU_FAN_MAX
+    new_config['System']['cpuTempFile'] = CPU_TEMP_FILE
+    new_config['System']['cpuTempMin'] = CPU_TEMP_MIN
+    new_config['System']['cpuTempMax'] = CPU_TEMP_MAX
+    new_config['System']['sysTempFile'] = SYS_TEMP_FILE
+    new_config['System']['sysTempMin'] = SYS_TEMP_MIN
+    new_config['System']['sysTempMax'] = SYS_TEMP_MAX
+    new_config['System']['nicReadMax'] = NIC_READ_MAX
+    new_config['System']['nicWriteMax'] = NIC_WRITE_MAX
+    new_config['System']['intDiskMaxRate'] = INTERNAL_DISK_MAX_RATE
+    new_config['System']['extDiskMaxRate'] = EXTERNAL_DISK_MAX_RATE
 
-    # Make a non-session-leader child process
-    try:
-        pid = os.fork() #@UndefinedVariable - only available in UNIX
-        if pid != 0:
-            sys.exit(0)
-    except OSError, e:
-        raise RuntimeError("1st fork failed: %s [%d]" %
-                   (e.strerror, e.errno))
+    new_config['Notifications'] = {}
+    new_config['Notifications']['notificationType'] = NOTIFICATION_TYPE
+    new_config['Notifications']['notificationFrequency'] = NOTIFICATION_FREQUENCY
+    new_config['Notifications']['notificationUnits'] = NOTIFICATION_UNITS
+    new_config['Notifications']['notificationCron'] = NOTIFICATION_CRON
+    new_config['Notifications']['notifyNominal'] = NOTIFY_NOMINAL
+    new_config['Notifications']['twitterEnabled'] = TWITTER_ENABLED
+    new_config['Notifications']['twitterToken'] = TWITTER_TOKEN
+    new_config['Notifications']['twitterSecret'] = TWITTER_SECRET
+    new_config['Notifications']['twitterPrefix'] = TWITTER_PREFIX
 
-    os.setsid() #@UndefinedVariable - only available in UNIX
-
-    # Make sure I can read my own files and shut out others
-    prev = os.umask(0)
-    os.umask(prev and int('077', 8))
-
-    # Make the child a session-leader by detaching from the terminal
-    try:
-        pid = os.fork() #@UndefinedVariable - only available in UNIX
-        if pid != 0:
-            sys.exit(0)
-    except OSError, e:
-        raise RuntimeError("2st fork failed: %s [%d]" %
-                   (e.strerror, e.errno))
-
-    dev_null = file('/dev/null', 'r')
-    os.dup2(dev_null.fileno(), sys.stdin.fileno())
-
-    if PIDFILE:
-        pid = str(os.getpid())
-        logger.debug(u"Writing PID " + pid + " to " + str(PIDFILE))
-        file(PIDFILE, 'w').write("%s\n" % pid)
-
-def launch_browser(host, port, root):
-    if host == '0.0.0.0':
-        host = 'localhost'
-
-    try:
-        import webbrowser
-        webbrowser.open('http://%s:%i%s' % (host, port, root))
-    except Exception, e:
-        logger.error('Could not launch browser: %s' % e)
-
-def config_write():
-    new_config = ConfigObj()
-    new_config.filename = CONFIGFILE
-
-    new_config['General'] = {}
-    new_config['General']['server_name'] = SERVER_NAME
-    new_config['General']['http_port'] = HTTP_PORT
-    new_config['General']['http_host'] = HTTP_HOST
-    new_config['General']['http_user'] = HTTP_USER
-    new_config['General']['http_pass'] = HTTP_PASS
-    new_config['General']['http_root'] = HTTP_ROOT
-    new_config['General']['http_look'] = HTTP_LOOK
-    new_config['General']['verify_ssl'] = int(VERIFY_SSL)
-    new_config['General']['launch_browser'] = int(LAUNCH_BROWSER)
-    new_config['General']['logdir'] = LOGDIR
-    new_config['General']['notification_frequency'] = int(NOTIFICATION_FREQUENCY)
-    new_config['General']['notification_units'] = NOTIFICATION_UNITS
-    new_config['General']['notify_nominal'] = int(NOTIFY_NOMINAL)
-
-    new_config['Server'] = {}
-    new_config['Server']['cpu_info_path'] = CPU_INFO_PATH
-    new_config['Server']['pseudofile_folder'] = PSEUDOFILE_FOLDER
-    new_config['Server']['num_internal_disk_capacity'] = int(NUM_INTERNAL_DISK_CAPACITY)
-    new_config['Server']['sys_fan_file'] = SYS_FAN_FILE
-    new_config['Server']['sys_fan_min'] = int(SYS_FAN_MIN)
-    new_config['Server']['sys_fan_max'] = int(SYS_FAN_MAX)
-    new_config['Server']['cpu_fan_file'] = CPU_FAN_FILE
-    new_config['Server']['cpu_fan_min'] = int(CPU_FAN_MIN)
-    new_config['Server']['cpu_fan_max'] = int(CPU_FAN_MAX)
-    new_config['Server']['cpu_temp_file'] = CPU_TEMP_FILE
-    new_config['Server']['cpu_temp_min'] = int(CPU_TEMP_MIN)
-    new_config['Server']['cpu_temp_max'] = int(CPU_TEMP_MAX)
-    new_config['Server']['sys_temp_file'] = SYS_TEMP_FILE
-    new_config['Server']['sys_temp_min'] = int(SYS_TEMP_MIN)
-    new_config['Server']['sys_temp_max'] = int(SYS_TEMP_MAX)
-    new_config['Server']['nic_read_max'] = int(NIC_READ_MAX)
-    new_config['Server']['nic_write_max'] = int(NIC_WRITE_MAX)
-    new_config['Server']['internal_disk_max_rate'] = int(INTERNAL_DISK_MAX_RATE)
-    new_config['Server']['external_disk_max_rate'] = int(EXTERNAL_DISK_MAX_RATE)
-
-    new_config['Twitter'] = {}
-    new_config['Twitter']['use_twitter'] = int(USE_TWITTER)
-    new_config['Twitter']['twitter_username'] = TWITTER_USERNAME
-    new_config['Twitter']['twitter_password'] = TWITTER_PASSWORD
-    new_config['Twitter']['twitter_prefix'] = TWITTER_PREFIX
-
-    new_config.write()
-
-def dbcheck():
-
-    conn=sqlite3.connect(DBFILE)
-    c=conn.cursor()
-    c.execute('CREATE TABLE IF NOT EXISTS logpaths (Program TEXT, LogPath TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS rules (id_num INTEGER, rule1 TEXT, rule2 TEXT, rule3 TEXT, rule4 TEXT, rule5 TEXT, rule6 TEXT, rule7 TEXT)')
-
-    conn.commit()
-    c.close()
-
-def start():
-    global __INITIALIZED__, started
-
-    if __INITIALIZED__:
-
-        # Crons and scheduled jobs go here
-        starttime = datetime.datetime.now()
-        if NOTIFICATION_UNITS == "hours" and NOTIFICATION_FREQUENCY != 0:
-            SCHED.add_interval_job(generator.health, hours=NOTIFICATION_FREQUENCY)
-        elif NOTIFICATION_UNITS == "minutes" and NOTIFICATION_FREQUENCY !=0:
-            SCHED.add_interval_job(generator.health, minutes=NOTIFICATION_FREQUENCY)
-        #SCHED.add_interval_job(searchnzb.searchbook, minutes=SEARCH_INTERVAL, start_date=starttime+datetime.timedelta(minutes=2))
-
-        SCHED.start()
-#        for job in SCHED.get_jobs():
-#            print job
-        started = True
-
-def shutdown(restart=False):
-    config_write()
-    logger.info('orielpy is shutting down ...')
-    cherrypy.engine.exit()
-
-    SCHED.shutdown(wait=True)
-
-    if PIDFILE :
-        logger.info('Removing pidfile %s' % PIDFILE)
-        os.remove(PIDFILE)
-
-    if restart:
-        logger.info('orielpy is restarting ...')
-        popen_list = [sys.executable, FULL_PATH]
-        popen_list += ARGS
-        if '--nolaunch' not in popen_list:
-            popen_list += ['--nolaunch']
-            logger.info('Restarting orielpy with ' + str(popen_list))
-        subprocess.Popen(popen_list, cwd=os.getcwd())
-
-    os._exit(0)
+    return new_config
