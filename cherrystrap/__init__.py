@@ -189,7 +189,7 @@ def initialize():
         GIT_ENABLED = check_setting_bool(CFG, 'Git', 'gitEnabled', git_enabled)
         GIT_PATH = check_setting_str(CFG, 'Git', 'gitPath', git_path)
         GIT_USER = check_setting_str(CFG, 'Git', 'gitUser', 'theguardian')
-        GIT_REPO = check_setting_str(CFG, 'Git', 'gitRepo', 'CherryStrap')
+        GIT_REPO = check_setting_str(CFG, 'Git', 'gitRepo', 'OrielPy')
         GIT_BRANCH = check_setting_str(CFG, 'Git', 'gitBranch', 'master')
         GIT_UPSTREAM = check_setting_str(CFG, 'Git', 'gitUpstream', '')
         GIT_LOCAL = check_setting_str(CFG, 'Git', 'gitLocal', '')
@@ -374,7 +374,7 @@ def start():
                 gitInterval = IntervalTrigger(weeks=0, days=0, hours=GIT_INTERVAL, minutes=0, seconds=0, start_date=None, end_date=None, timezone=None)
                 SCHED.add_job(versioncheck.checkGithub, gitInterval)
 
-            if orielpy.NOTIFICATION_TYPE != "":
+            if orielpy.NOTIFICATION_TYPE != "disabled":
                 if orielpy.NOTIFICATION_TYPE == 'interval' and orielpy.NOTIFICATION_UNITS == 'hours':
                     healthNotify = IntervalTrigger(weeks=0, days=0, hours=orielpy.NOTIFICATION_FREQUENCY, minutes=0, seconds=0, start_date=None, end_date=None, timezone=None)
                 elif orielpy.NOTIFICATION_TYPE == 'interval' and orielpy.NOTIFICATION_UNITS == 'minutes':
