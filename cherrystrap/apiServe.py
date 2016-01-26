@@ -95,10 +95,10 @@ class settings(object):
             cherrystrap.HTTP_HOST = kwargs.pop('httpHost', '0.0.0.0')
         if 'httpPort' in kwargs:
             try:
-                cherrystrap.HTTP_PORT = int(kwargs.pop('httpPort', 7889))
+                cherrystrap.HTTP_PORT = int(kwargs.pop('httpPort', 5151))
             except:
                 errorList.append("httpPort must be an integer")
-                kwargs.pop('httpPort', 7889)
+                kwargs.pop('httpPort', 5151)
 
         if 'sslEnabled' in kwargs:
             cherrystrap.HTTPS_ENABLED = kwargs.pop('sslEnabled', False) == 'true'
