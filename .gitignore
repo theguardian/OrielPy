@@ -4,6 +4,7 @@ cache/*
 *.db
 *.lock
 config.ini
+server.png
 Logs/*
 keys/*
 

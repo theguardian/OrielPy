@@ -20,6 +20,11 @@ class subroutines:
 
         fileName = orielpy.CPU_INFO_PATH
 
+        # Account for condition where certain info is not available
+        cpu_arr['model_name'] = "unknown CPU"
+        cpu_arr['cpu_MHz'] = "unknown speed"
+        cpu_arr['cache_size'] = "unknown cache"
+
         try:
             fileIn = open(fileName, 'r')
             lines = [line.rstrip() for line in fileIn]
@@ -30,17 +35,23 @@ class subroutines:
                 key = key.replace("\\t", "")
                 key = key.replace(" ", "_")
                 value = str(new_line[1:])[2:-2]
+                # Account for non-standard /proc/cpu (e.g. for ARM devices)
+                if key == 'Processor':
+                    key = 'model_name'
+                elif key == ' model_name':
+                    key = ' Processor'
+                elif key == 'BogoMIPS':
+                    key = 'cpu_MHz'
                 cpu_arr[key] = value
             fileIn.close()
         except:
             logger.warn("Couldn't read CPU info from file %s" % fileName)
-            cpu_arr['model_name'] = "unknown CPU"
-            cpu_arr['cpu_MHz'] = "unknown speed"
-            cpu_arr['cache_size'] = "unknown cache"
+
 
         return cpu_arr
 
     def diskio_subroutine(self):
+
         try:
             diskio_import1 = psutil.disk_io_counters(perdisk=True)
             time.sleep(1)
@@ -261,7 +272,7 @@ class subroutines:
                             ext_tot_list['status'] = values['status']
                             ext_tot_list['activity'] = "100"
                             activity = True
-                if not actvity:
+                if not activity:
                     ext_tot_list['status'] = "Idle"
                     ext_tot_list['activity'] = "0"
                 combined_final_list.append(ext_tot_list)
@@ -303,7 +314,7 @@ class subroutines:
             fileIn.close()
         except:
             temp1 = 0
-            
+
         fileName = os.path.join(orielpy.PSEUDOFILE_FOLDER, orielpy.SYS_TEMP_FILE)
         try:
             fileIn = open(fileName, 'r')

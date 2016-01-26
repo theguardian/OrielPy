@@ -374,6 +374,7 @@ def start():
                 gitInterval = IntervalTrigger(weeks=0, days=0, hours=GIT_INTERVAL, minutes=0, seconds=0, start_date=None, end_date=None, timezone=None)
                 SCHED.add_job(versioncheck.checkGithub, gitInterval)
 
+            healthNotify = None
             if orielpy.NOTIFICATION_TYPE != "disabled":
                 if orielpy.NOTIFICATION_TYPE == 'interval' and orielpy.NOTIFICATION_UNITS == 'hours':
                     healthNotify = IntervalTrigger(weeks=0, days=0, hours=orielpy.NOTIFICATION_FREQUENCY, minutes=0, seconds=0, start_date=None, end_date=None, timezone=None)
@@ -390,7 +391,9 @@ def start():
                         healthNotify = CronTrigger(year=None, month=MOY, day=DOM, week=None, day_of_week=DOW, hour=hour, minute=minute, second=None, start_date=None, end_date=None, timezone=None)
                     except Exception, e:
                         logger.error("Problem defining Cronjob: %s" % e)
-                SCHED.add_job(lambda: health(notify=True), healthNotify)
+
+                if healthNotify:
+                    SCHED.add_job(lambda: health(notify=True), healthNotify)
 
             SCHED.start()
             for job in SCHED.get_jobs():
