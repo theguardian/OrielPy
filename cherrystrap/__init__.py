@@ -159,12 +159,12 @@ def initialize():
                 git_interval = 0
 
         try:
-            HTTP_PORT = check_setting_int(CFG, 'Server', 'httpPort', 5151)
+            HTTP_PORT = check_setting_int(CFG, 'Server', 'httpPort', 7889)
         except:
-            HTTP_PORT = 5151
+            HTTP_PORT = 7889
 
         if HTTP_PORT < 21 or HTTP_PORT > 65535:
-            HTTP_PORT = 5151
+            HTTP_PORT = 7889
 
         APP_NAME = check_setting_str(CFG, 'Server', 'appName', 'CherryStrap')
         HTTP_ROOT = check_setting_str(CFG, 'Server', 'httpRoot', '')
