@@ -273,9 +273,9 @@
         <div class="col-md-12 form-group">
           <label for="notificationType">Notification Type</label>
           <select name="notificationType" class="form-control" id="notificationType">
-            <option value="" id="disabled">Disabled</option>
-            <option value="interval" id="interval">Interval</option>
-            <option value="cron" id="cron">Cron</option>
+            <option value="" id="notificationdisabled">Disabled</option>
+            <option value="interval" id="notificationinterval">Interval</option>
+            <option value="cron" id="notificationcron">Cron</option>
           </select>
         </div>
         <div class="col-md-12" id="notificationGroup" style="display:none;">
@@ -287,8 +287,8 @@
             <div class="col-md-6 form-group">
               <label for="notificationUnits">Notification Units</label>
               <select name="notificationUnits" class="form-control" id="notificationUnits">
-                <option value="minutes" id="minutes">Minutes</option>
-                <option value="hours" id="hours">Hours</option>
+                <option value="minutes" id="notificationminutes">Minutes</option>
+                <option value="hours" id="notificationhours">Hours</option>
               </select>
             </div>
           </div>
@@ -342,9 +342,9 @@
         <div class="col-md-12 form-group">
           <label for="loggerType">Log Schedule Type</label>
           <select name="loggerType" class="form-control" id="loggerType">
-            <option value="" id="disabled">Disabled</option>
-            <option value="interval" id="interval">Interval</option>
-            <option value="cron" id="cron">Cron</option>
+            <option value="" id="loggerdisabled">Disabled</option>
+            <option value="interval" id="loggerinterval">Interval</option>
+            <option value="cron" id="loggercron">Cron</option>
           </select>
         </div>
         <div class="col-md-12" id="loggerGroup" style="display:none;">
@@ -356,8 +356,8 @@
             <div class="col-md-6 form-group">
               <label for="loggerUnits">Status Logging Units</label>
               <select name="loggerUnits" class="form-control" id="loggerUnits">
-                <option value="minutes" id="minutes">Minutes</option>
-                <option value="hours" id="hours">Hours</option>
+                <option value="minutes" id="loggerminutes">Minutes</option>
+                <option value="hours" id="loggerhours">Hours</option>
               </select>
             </div>
           </div>
@@ -465,11 +465,11 @@
       }
 
       if (key == 'notificationType') {
-        $('#'+value).prop('selected', true);
+        $('#notification'+value).prop('selected', true);
       }
 
       if (key == 'notificationUnits') {
-        $('#'+value).prop('selected', true);
+        $('#notification'+value).prop('selected', true);
       }
 
       if (key == 'notificationType' && value == 'interval') {
@@ -501,11 +501,11 @@
       }
 
       if (key == 'loggerType') {
-        $('#'+value).prop('selected', true);
+        $('#logger'+value).prop('selected', true);
       }
 
       if (key == 'loggerUnits') {
-        $('#'+value).prop('selected', true);
+        $('#logger'+value).prop('selected', true);
       }
 
       if (key == 'loggerType' && value == 'interval') {
