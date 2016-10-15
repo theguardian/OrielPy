@@ -16,6 +16,7 @@
     <li><a href="#updater-config" data-toggle="tab">Update</a></li>
     <li><a href="#orielpy-config" data-toggle="tab">OrielPy</a></li>
     <li><a href="#notifications-config" data-toggle="tab">Notifications</a></li>
+    <li><a href="#statuslogging-config" data-toggle="tab">Status Logging</a></li>
 </ul>
 <form id="config_form">
   <div class="row col-md-12 tab-content">
@@ -335,6 +336,41 @@
       </div>
     </div>
 
+    <div class="tab-pane" id="statuslogging-config">
+      <br/>
+      <div class="row">
+        <div class="col-md-12 form-group">
+          <label for="loggerType">Log Schedule Type</label>
+          <select name="loggerType" class="form-control" id="loggerType">
+            <option value="" id="disabled">Disabled</option>
+            <option value="interval" id="interval">Interval</option>
+            <option value="cron" id="cron">Cron</option>
+          </select>
+        </div>
+        <div class="col-md-12" id="loggerGroup" style="display:none;">
+          <div class="col-md-12" id="loggerFrequencyGroup" style="display:none;">
+            <div class="col-md-6 form-group">
+              <label for="loggerFrequency">Status Logging Frequency</label>
+              <input type="text" name="loggerFrequency" value="" class="form-control" id="loggerFrequency" placeholder="6">
+            </div>
+            <div class="col-md-6 form-group">
+              <label for="loggerUnits">Status Logging Units</label>
+              <select name="loggerUnits" class="form-control" id="loggerUnits">
+                <option value="minutes" id="minutes">Minutes</option>
+                <option value="hours" id="hours">Hours</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-12" id="loggerCronGroup" style="display:none;">
+            <div class="col-md-12 form-group">
+              <label for="loggerCron">Status Logging Cron</label>
+              <input type="text" name="loggerCron" value="" class="form-control" id="loggerCron" placeholder="0 5 * * 1">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <button type="submit" class="btn btn-primary pull-right">Save Configuration</button>
   </div>
 </form>
@@ -452,6 +488,38 @@
       }
     });
 
+    $.each(data['logger'], function(key, value) {
+      if ($('#'+key).attr('type') == 'text' || $('#'+key).attr('type') == 'password') {
+        $('form input').filter(function() {
+          return key == this.id;
+        }).val(value);
+      }
+      else if ($('#'+key).attr('type') == 'checkbox' && value == true) {
+        $('form input').filter(function() {
+          return key == this.id;
+        }).prop('checked', true);
+      }
+
+      if (key == 'loggerType') {
+        $('#'+value).prop('selected', true);
+      }
+
+      if (key == 'loggerUnits') {
+        $('#'+value).prop('selected', true);
+      }
+
+      if (key == 'loggerType' && value == 'interval') {
+        $('#loggerGroup').show();
+        $('#loggerFrequencyGroup').show();
+        $('#loggerCronGroup').hide();
+      }
+      else if (key == 'loggerType' && value == 'cron') {
+        $('#loggerGroup').show();
+        $('#loggerCronGroup').show();
+        $('#loggerFrequencyGroup').hide();
+      }
+    });
+
   });
 
   $('#configTable a:first').tab('show');
@@ -488,6 +556,24 @@
      $('#notificationGroup').hide();
      $('#notificationFrequencyGroup').hide();
      $('#notificationCronGroup').hide();
+  });
+
+  $('#loggerType').change(function(){
+     if($(this).val() == 'interval'){
+      $('#loggerGroup').show();
+      $('#loggerFrequencyGroup').show();
+      $('#loggerCronGroup').hide();
+      return true;
+     }
+     else if($(this).val() == 'cron'){
+       $('#loggerGroup').show();
+       $('#loggerFrequencyGroup').hide();
+       $('#loggerCronGroup').show();
+       return true;
+     }
+     $('#loggerGroup').hide();
+     $('#loggerFrequencyGroup').hide();
+     $('#loggerCronGroup').hide();
   });
 
   $('#twitterEnabled').click(function() {

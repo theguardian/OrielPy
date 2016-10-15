@@ -16,6 +16,7 @@ from lib.apscheduler.triggers.cron import CronTrigger
 from cherrystrap import logger, formatter, versioncheck
 import orielpy
 from orielpy.generator import health
+from orielpy.jobs import logStatus
 from configCheck import CheckSection, check_setting_int, check_setting_bool, check_setting_str
 from initializeDb import createDb
 
@@ -390,10 +391,31 @@ def start():
                         DOW = cronList[4]
                         healthNotify = CronTrigger(year=None, month=MOY, day=DOM, week=None, day_of_week=DOW, hour=hour, minute=minute, second=None, start_date=None, end_date=None, timezone=None)
                     except Exception, e:
-                        logger.error("Problem defining Cronjob: %s" % e)
+                        logger.error("Problem defining Notification Cronjob: %s" % e)
 
                 if healthNotify:
                     SCHED.add_job(lambda: health(notify=True), healthNotify)
+
+            statusLogger = None
+            if orielpy.LOGGER_TYPE != "disabled":
+                if orielpy.LOGGER_TYPE == 'interval' and orielpy.LOGGER_UNITS == 'hours':
+                    statusLogger = IntervalTrigger(weeks=0, days=0, hours=orielpy.LOGGER_FREQUENCY, minutes=0, seconds=0, start_date=None, end_date=None, timezone=None)
+                elif orielpy.LOGGER_TYPE == 'interval' and orielpy.LOGGER_UNITS == 'minutes':
+                    statusLogger = IntervalTrigger(weeks=0, days=0, hours=0, minutes=orielpy.LOGGER_FREQUENCY, seconds=0, start_date=None, end_date=None, timezone=None)
+                elif orielpy.LOGGER_TYPE == 'cron':
+                    try:
+                        cronList = orielpy.LOGGER_CRON.split(' ')
+                        minute = cronList[0]
+                        hour = cronList[1]
+                        DOM = cronList[2]
+                        MOY = cronList[3]
+                        DOW = cronList[4]
+                        statusLogger = CronTrigger(year=None, month=MOY, day=DOM, week=None, day_of_week=DOW, hour=hour, minute=minute, second=None, start_date=None, end_date=None, timezone=None)
+                    except Exception, e:
+                        logger.error("Problem defining Status Logging Cronjob: %s" % e)
+
+                if statusLogger:
+                    SCHED.add_job(lambda: logStatus(), statusLogger)
 
             SCHED.start()
             for job in SCHED.get_jobs():

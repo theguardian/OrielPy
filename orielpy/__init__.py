@@ -27,6 +27,11 @@ NOTIFICATION_UNITS = None
 NOTIFICATION_CRON = None
 NOTIFY_NOMINAL = False
 
+LOGGER_TYPE = None
+LOGGER_FREQUENCY = 0
+LOGGER_UNITS = None
+LOGGER_CRON = None
+
 TWITTER_ENABLED = False
 TWITTER_TOKEN = None
 TWITTER_SECRET = None
@@ -41,10 +46,12 @@ def injectVarCheck(CFG):
     INTERNAL_DISK_MAX_RATE, EXTERNAL_DISK_MAX_RATE, \
     NOTIFICATION_TYPE, NOTIFICATION_FREQUENCY, NOTIFICATION_UNITS, \
     NOTIFICATION_CRON, NOTIFY_NOMINAL, \
+    LOGGER_TYPE, LOGGER_FREQUENCY, LOGGER_UNITS, LOGGER_CRON, \
     TWITTER_ENABLED, TWITTER_TOKEN, TWITTER_SECRET, TWITTER_PREFIX
 
     CheckSection(CFG, 'System')
     CheckSection(CFG, 'Notifications')
+    CheckSection(CFG, 'Logger')
 
     CPU_INFO_PATH = check_setting_str(CFG, 'System', 'cpuInfoPath', '/proc/cpuinfo')
     PSEUDOFILE_FOLDER = check_setting_str(CFG, 'System', 'pseudofileFolder', '/sys/devices/virtual/thermal/thermal_zone0/')
@@ -76,6 +83,11 @@ def injectVarCheck(CFG):
     TWITTER_TOKEN = check_setting_str(CFG, 'Notifications', 'twitterToken', '')
     TWITTER_SECRET = check_setting_str(CFG, 'Notifications', 'twitterSecret', '')
     TWITTER_PREFIX = check_setting_str(CFG, 'Notifications', 'twitterPrefix', 'OrielPy')
+
+    LOGGER_TYPE = check_setting_str(CFG, 'Logger', 'loggerType', 'disabled')
+    LOGGER_FREQUENCY = check_setting_int(CFG, 'Logger', 'loggerFrequency', 0)
+    LOGGER_UNITS = check_setting_str(CFG, 'Logger', 'loggerUnits', 'hours')
+    LOGGER_CRON = check_setting_str(CFG, 'Logger', 'loggerCron', '0 5 * * 1')
 
 def injectDbSchema():
 
@@ -129,6 +141,12 @@ def injectApiConfigGet():
             "twitterToken": TWITTER_TOKEN,
             "twitterSecret": TWITTER_SECRET,
             "twitterPrefix": TWITTER_PREFIX
+        },
+        "logger": {
+            "loggerType": LOGGER_TYPE,
+            "loggerFrequency": LOGGER_FREQUENCY,
+            "loggerUnits": LOGGER_UNITS,
+            "loggerCron": LOGGER_CRON,
         }
     }
 
@@ -142,6 +160,7 @@ def injectApiConfigPut(kwargs, errorList):
     INTERNAL_DISK_MAX_RATE, EXTERNAL_DISK_MAX_RATE, \
     NOTIFICATION_TYPE, NOTIFICATION_FREQUENCY, NOTIFICATION_UNITS, \
     NOTIFICATION_CRON, NOTIFY_NOMINAL, \
+    LOGGER_TYPE, LOGGER_FREQUENCY, LOGGER_UNITS, LOGGER_CRON, \
     TWITTER_ENABLED, TWITTER_TOKEN, TWITTER_SECRET, TWITTER_PREFIX
 
     if 'cpuInfoPath' in kwargs:
@@ -276,6 +295,19 @@ def injectApiConfigPut(kwargs, errorList):
         TWITTER_SECRET = kwargs.pop('twitterSecret', '')
     if 'twitterPrefix' in kwargs:
         TWITTER_PREFIX = kwargs.pop('twitterPrefix', 'OrielPy')
+    if 'loggerType' in kwargs:
+        LOGGER_TYPE = kwargs.pop('loggerType', 'disabled')
+    if 'loggerFrequency' in kwargs:
+        try:
+            LOGGER_FREQUENCY = int(kwargs.pop('loggerFrequency', 0))
+        except:
+            LOGGER_FREQUENCY = 0
+            errorList.append("loggerFrequency must be an integer")
+            kwargs.pop('loggerFrequency', 0)
+    if 'loggerUnits' in kwargs:
+        LOGGER_UNITS = kwargs.pop('loggerUnits', 'hours')
+    if 'loggerCron' in kwargs:
+        LOGGER_CRON = kwargs.pop('loggerCron', '0 5 * * 1')
 
     return kwargs, errorList
 
@@ -311,5 +343,11 @@ def injectVarWrite(new_config):
     new_config['Notifications']['twitterToken'] = TWITTER_TOKEN
     new_config['Notifications']['twitterSecret'] = TWITTER_SECRET
     new_config['Notifications']['twitterPrefix'] = TWITTER_PREFIX
+
+    new_config['Logger'] = {}
+    new_config['Logger']['loggerType'] = LOGGER_TYPE
+    new_config['Logger']['loggerFrequency'] = LOGGER_FREQUENCY
+    new_config['Logger']['loggerUnits'] = LOGGER_UNITS
+    new_config['Logger']['loggerCron'] = LOGGER_CRON
 
     return new_config
