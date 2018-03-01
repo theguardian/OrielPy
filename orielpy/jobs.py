@@ -17,11 +17,12 @@ def logStatus():
     json_partition = subcall.partitions_subroutine()
     json_networking = subcall.networkload_subroutine()
 
-    logger.info("Logging system status on defined job interval\n"+ \
-    "diskInfo = "+json.dumps(json_disk)+"\n"+ \
-    "fansTemps = "+json.dumps(json_sysfiles)+"\n"+ \
-    "cpuLoad = "+json.dumps(json_cpu)+"\n"+ \
-    "memoryInfo = "+json.dumps(json_mem)+"\n"+ \
-    "swapInfo = "+json.dumps(json_swap)+"\n"+ \
-    "volumeInfo = "+json.dumps(json_partition)+"\n"+ \
-    "networkInfo = "+json.dumps(json_networking))
+    logger.info("{"+ \
+    "\"note\" : \"Logging system status on defined job interval\", "+ \
+    "\"diskInfo\" : "+json.dumps(json_disk)+", "+ \
+    "\"fansTemps\" : "+json.dumps(json_sysfiles)+", "+ \
+    "\"cpuLoad\" : "+json.dumps(json_cpu)+", "+ \
+    "\"memoryInfo\" : "+json.dumps(json_mem)+", "+ \
+    "\"swapInfo\" : "+json.dumps(json_swap)+", "+ \
+    "\"volumeInfo\" : "+json.dumps(json_partition)+", "+ \
+    "\"networkInfo\" : "+json.dumps(json_networking)+"}")

@@ -16,6 +16,7 @@
 import os
 import threading
 import logging
+import json
 from logging import handlers
 
 import cherrystrap
@@ -45,7 +46,7 @@ class RotatingLogger(object):
         filehandler = handlers.RotatingFileHandler(self.filename, maxBytes=self.max_size, backupCount=self.max_files)
         filehandler.setLevel(logging.DEBUG)
 
-        fileformatter = logging.Formatter('%(asctime)s - %(levelname)-7s :: %(message)s', '%d-%b-%Y %H:%M:%S')
+        fileformatter = logging.Formatter('{"timestamp": "%(asctime)s", "level": "%(levelname)s", "message": %(message)s}', '%d-%b-%Y %H:%M:%S')
 
         filehandler.setFormatter(fileformatter)
         l.addHandler(filehandler)
@@ -56,7 +57,7 @@ class RotatingLogger(object):
                 consolehandler.setLevel(logging.INFO)
             if loglevel == 2:
                 consolehandler.setLevel(logging.DEBUG)
-            consoleformatter = logging.Formatter('%(asctime)s - %(levelname)s :: %(message)s', '%d-%b-%Y %H:%M:%S')
+            consoleformatter = logging.Formatter('{"timestamp": "%(asctime)s", "level": "%(levelname)s", "message": %(message)s}', '%d-%b-%Y %H:%M:%S')
             consolehandler.setFormatter(consoleformatter)
             l.addHandler(consolehandler)
 
@@ -66,10 +67,11 @@ class RotatingLogger(object):
 
         threadname = threading.currentThread().getName()
 
+        if message[0]!="{":
+            message = json.dumps(message)
+
         if level != 'DEBUG':
             cherrystrap.LOGLIST.insert(0, (formatter.now(), message, level, threadname))
-
-        message = threadname + ' : ' + message
 
         if level == 'DEBUG':
             logger.debug(message)
