@@ -71,17 +71,21 @@ class subroutines:
                 alphabet[letter] = index + 1
 
             for value in disk_partition_list:
-                if "sd" in value:
+                if ("sd" in value and len(value)==4):
                     check_value = str(value)[2]
                     try:
                         check_place = alphabet[check_value]
                     except:
                         check_place = 999
+                elif ("sd" in value and len(value)<4):
+                    check_place = 999
                 elif "ram" in value:
                     check_place = 999
                 elif value == "mmcblk0":
                     check_place = 999
                 elif "md" in value:
+                    check_place = 999
+                elif "loop" in value:
                     check_place = 999
                 else:
                     check_place = 0
@@ -94,10 +98,10 @@ class subroutines:
                 else:
                     external_list.append(value)
 
-            #print 'Internal Volumes: %s<BR>' % internal_list
-            #print 'External Volumes: %s<BR>' % external_list
-            #print 'Comprehensive Volumes: %s<BR>' % volume_list
-            #print 'Extraneous Volumes: %s<BR>' % extraneous_list
+            # print 'Internal Volumes: %s<BR>' % internal_list
+            # print 'External Volumes: %s<BR>' % external_list
+            # print 'Comprehensive Volumes: %s<BR>' % volume_list
+            # print 'Extraneous Volumes: %s<BR>' % extraneous_list
 
             internal_disk_list = []
             external_disk_list = []
@@ -113,8 +117,8 @@ class subroutines:
             internal_disk_list = set(internal_disk_list)
             external_disk_list = set(external_disk_list)
 
-            #print internal_disk_list
-            #print external_disk_list
+            # print internal_disk_list
+            # print external_disk_list
 
             num_internal_disks = len(internal_disk_list)
             num_external_disks = len(external_disk_list)
@@ -285,6 +289,8 @@ class subroutines:
             combined_final_list = []
             logger.error("%s" % "There is a problem with psutil.disk_io_counters")
 
+        #print combined_final_list
+
         return combined_final_list
 
     def sysfiles_subroutine(self):
@@ -429,7 +435,7 @@ class subroutines:
                 partition_array['mountpoint'] = mountpoint
                 partition_array['filesystem'] = filesystem
 
-                if filesystem !="":
+                if (filesystem !="" and filesystem !="squashfs"):
                     disk_total_raw = psutil.disk_usage(mountpoint).total
                     disk_total_MB = float(disk_total_raw) / 1048576
                     if disk_total_MB > 1024:
