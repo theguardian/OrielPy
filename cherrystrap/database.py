@@ -19,7 +19,7 @@ class SQLite_DBConnection:
         try:
             global sqlite3
             import sqlite3
-        except Exception, e:
+        except (Exception, e):
             logger.error("There was an error importing SQLite: %s" % e)
         self.filename = filename
         self.connection = sqlite3.connect(dbFilename(filename), 20)
@@ -46,7 +46,7 @@ class SQLite_DBConnection:
                     self.connection.commit()
                     break
 
-                except sqlite3.OperationalError, e:
+                except (sqlite3.OperationalError, e):
                     if "unable to open database file" in e.message or "database is locked" in e.message:
                         logger.warn('Database Error: %s' % e)
                         attempt += 1
@@ -55,7 +55,7 @@ class SQLite_DBConnection:
                         logger.error('Database error: %s' % e)
                         raise
 
-                except sqlite3.DatabaseError, e:
+                except (sqlite3.DatabaseError, e):
                     logger.error('Fatal error executing %s :: %s' % (query, e))
                     raise
 

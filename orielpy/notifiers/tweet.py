@@ -10,8 +10,8 @@ try:
 except:
     from cgi import parse_qsl #@Reimport
 
-import lib.oauth2 as oauth
-import lib.pythontwitter as twitter
+import oauth2 as oauth
+import twitter
 
 class TwitterNotifier:
 
@@ -98,7 +98,7 @@ class TwitterNotifier:
 
         try:
             api.PostUpdate(message)
-        except Exception, e:
+        except (Exception, e):
             logger.error(u"Error Sending Tweet: %s" %e)
             return False
 

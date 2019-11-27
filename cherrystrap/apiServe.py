@@ -2,8 +2,8 @@ import cherrypy, collections
 import cherrystrap
 from orielpy import generator
 from orielpy.subroutines import subroutines
-from lib import simplejson as json
-from lib.passlib.hash import sha256_crypt
+import simplejson as json
+from passlib.hash import sha256_crypt
 from cherrystrap import logger, formatter, database
 
 class settings(object):
@@ -58,7 +58,7 @@ class settings(object):
         try:
             from orielpy import injectApiConfigGet
             configuration.update(injectApiConfigGet())
-        except Exception, e:
+        except (Exception, e):
             logger.debug("There was a problem injection application variables into API-GET: %s" % e)
         #================================================================
 
@@ -124,7 +124,7 @@ class settings(object):
             if httpPassProcess != cherrystrap.HTTP_PASS and httpPassProcess != "":
                 try:
                     cherrystrap.HTTP_PASS = sha256_crypt.encrypt(httpPassProcess)
-                except Exception, e:
+                except (Exception, e):
                     logger.error('There was a problem generating password hash: %s' % e)
             elif httpPassProcess == "":
                 cherrystrap.HTTP_PASS = ""
@@ -150,7 +150,7 @@ class settings(object):
             if mysqlPassProcess != cherrystrap.MYSQL_PASS and mysqlPassProcess != "":
                 try:
                     cherrystrap.MYSQL_PASS = formatter.encode('obscure', mysqlPassProcess)
-                except Exception, e:
+                except (Exception, e):
                     logger.error('There was a problem encoding MySQL password: %s' % e)
             elif mysqlPassProcess == "":
                 cherrystrap.MYSQL_PASS = ""
@@ -192,7 +192,7 @@ class settings(object):
         try:
             from orielpy import injectApiConfigPut
             kwargs, errorList = injectApiConfigPut(kwargs, errorList)
-        except Exception, e:
+        except (Exception, e):
             logger.debug("There was a problem injection application variables into API-PUT: %s" % e)
         #================================================================
 
@@ -231,7 +231,7 @@ class applicationlog(object):
         sortdir = 'desc'
 
         if kwargs is not None:
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 if key == 'search[value]':
                     search = str(value).lower()
                 if key == 'order[0][dir]':
@@ -519,7 +519,7 @@ class logs(object):
                 myDB.upsert("logpaths", newValueDict, controlValueDict)
                 status = "success"
                 message = "%s entry successfully added to table logpaths" % program
-            except Exception, e:
+            except (Exception, e):
                 status = "danger"
                 message = "%s entry could not be added: %s" % (program, e)
         else:
@@ -542,7 +542,7 @@ class logs(object):
                 log_kvs = myDB.action('DELETE from logpaths WHERE Program=?', [program])
                 status = "success"
                 message = "%s entry successfully deleted from table logpaths" % program
-            except Exception, e:
+            except (Exception, e):
                 status = "danger"
                 message = "%s entry could not be deleted: %s" % (program, e)
         else:
@@ -596,7 +596,7 @@ class rules(object):
                 myDB.action('INSERT INTO rules (rule1, rule2, rule3, rule4, rule5, rule6, rule7) VALUES (?, ?, ?, ?, ?, ?, ?)', (rule1, rule2, rule3, rule4, rule5, rule6, rule7))
                 status = "success"
                 message = "%s rule successfully added to table rules" % rule1
-            except Exception, e:
+            except (Exception, e):
                 status = "danger"
                 message = "%s rule could not be added: %s" % (rule1, e)
         else:
@@ -619,7 +619,7 @@ class rules(object):
                 rule_kvs = myDB.action('DELETE from rules WHERE id=?', [id])
                 status = "success"
                 message = "Rule id %s successfully deleted from table rules" % id
-            except Exception, e:
+            except (Exception, e):
                 status = "danger"
                 message = "Rule id %s could not be deleted: %s" % (id, e)
         else:
@@ -645,7 +645,7 @@ class systemlogs(object):
         sortdir = 'asc'
 
         if kwargs is not None:
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 if key == 'search[value]':
                     search = str(value).lower()
                 if key == 'order[0][dir]':
@@ -741,7 +741,7 @@ class sysprocesses(object):
         sortdir = 'desc'
 
         if kwargs is not None:
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 if key == 'search[value]':
                     search = str(value).lower()
                 if key == 'order[0][dir]':
@@ -750,12 +750,12 @@ class sysprocesses(object):
                     sortcolumn = int(value)
 
         # Fix for column reordering without having to install a plugin
-        newOrder = [2,0,5,1,4,3]
+        newOrder = [0,1,3,4,2,5]
         procArr = []
         if proc_tree:
             for item in proc_tree:
                 newList = []
-                for key, value in item.iteritems():
+                for key, value in item.items():
                     newList.append(value)
                 procList = [ newList[i] for i in newOrder]
                 procArr.append(tuple(procList))

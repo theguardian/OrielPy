@@ -4,7 +4,7 @@ import psutil
 import collections
 import json
 import string
-import ConfigParser
+import configparser
 import decimal
 import re
 import time
@@ -374,9 +374,9 @@ class subroutines:
 
         try:
             mem_total_raw = psutil.virtual_memory().total
-            mem_mb = mem_total_raw / 1048576
+            mem_mb = round(mem_total_raw / 1048576)
             mem_available_raw = psutil.virtual_memory().available
-            mem_available = mem_available_raw / 1048576
+            mem_available = round(mem_available_raw / 1048576)
             mem_used = mem_mb - mem_available;
             mem_percent = psutil.virtual_memory().percent
 
@@ -397,9 +397,9 @@ class subroutines:
 
         try:
             swap_total_raw = psutil.swap_memory().total
-            swap_mb = swap_total_raw / 1048576
+            swap_mb = round(swap_total_raw / 1048576)
             swap_available_raw = psutil.swap_memory().free
-            swap_available = swap_available_raw / 1048576
+            swap_available = round(swap_available_raw / 1048576)
             swap_used = swap_mb - swap_available;
             swap_percent = psutil.swap_memory().percent
 

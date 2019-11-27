@@ -1,6 +1,7 @@
-import shutil, os, datetime, urllib, urllib2, threading
+import shutil, os, datetime, threading
 
-from urllib import FancyURLopener
+# from urllib import FancyURLopener
+# from urllib2 import urlopen
 
 import orielpy
 import json

@@ -78,7 +78,6 @@
 
 <%def name="javascriptIncludes()">
 <script>
-
 $(document).ready(function() {
   loadRules();
 });
@@ -87,7 +86,7 @@ function loadRules()
   {
     $.getJSON('/api/v1/rules?token=${cherrystrap.API_TOKEN}', function(data) {
       var i=0;
-      $('#rulesTable').html('');
+      $("#rulesTable").find("tr:gt(0)").remove();
       $.each(data, function(i, item) {
         if(data[i]['rule2']) {
           var rule2 = '<BR>'+data[i]['rule2'];

@@ -1,9 +1,9 @@
 import os, cherrypy, urllib, collections
 from cherrypy import _cperror
 from cherrypy.lib.static import serve_file
-from lib import simplejson as json
-from auth import AuthController, require, member_of, name_is
-from templating import serve_template
+import simplejson as json
+from cherrystrap.auth import AuthController, require, member_of, name_is
+from cherrystrap.templating import serve_template
 
 import threading, time
 
@@ -91,7 +91,7 @@ class WebInterface(object):
         if logFile:
             try:
                 return serve_file(logFile, "application/x-download", "attachment")
-            except Exception, e:
+            except (Exception, e):
                 message['status'] = 'danger'
                 message['message'] = 'There was a problem downloading log file %s' % logFile
                 logger.error('There was a problem downloading log file %s: %s' % (logFile, e))

@@ -4,7 +4,6 @@
 %>
 
 <%def name="headIncludes()">
-<link rel="stylesheet" href="/css/dataTables.bootstrap.min.css"/>
 <title>${cherrystrap.APP_NAME}: ${title}</title>
 </%def>
 
@@ -43,8 +42,6 @@
 </%def>
 
 <%def name="javascriptIncludes()">
-	<script src="/js/jquery.dataTables.min.js"/></script>
-	<script src="/js/dataTables.bootstrap.min.js"/></script>
 	<script>
 		%if message:
 			$(".ajaxMsg").html('<div class="alert alert-'+message['status']+'">'+message['message']+'</div>').show().fadeOut(5000);

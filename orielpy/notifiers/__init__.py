@@ -1,5 +1,5 @@
 import orielpy
-import tweet
+from orielpy.notifiers import tweet
 from orielpy.common import *
 
 twitter_notifier = tweet.TwitterNotifier()

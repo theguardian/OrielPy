@@ -36,7 +36,6 @@
 
 <%def name="javascriptIncludes()">
 <script>
-
 $(document).ready(function() {
   loadLogs();
 });
@@ -45,7 +44,7 @@ function loadLogs()
   {
     $.getJSON('/api/v1/logs?token=${cherrystrap.API_TOKEN}', function(data) {
       var i=0;
-      $('#logsTable').html('');
+      $("#logsTable").find("tr:gt(0)").remove();
       $.each(data, function(key, value) {
         $('#logsTable').append('<tr><td>'+data[i]['program']+'</td><td>'+data[i]['logpath']+'</td> \
           <td><button id="'+data[i]['program']+'" class="btn btn-danger" onclick="removeLog(this)"> \

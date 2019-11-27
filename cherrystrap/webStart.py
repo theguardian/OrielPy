@@ -1,5 +1,6 @@
 import os, sys, cherrypy
 import cherrystrap
+import portend
 from cherrystrap import logger
 from cherrystrap.webServe import WebInterface
 from cherrystrap import apiServe
@@ -76,7 +77,8 @@ def initialize(options={}):
     }
 
     # Prevent time-outs
-    cherrypy.engine.timeout_monitor.unsubscribe()
+    # deprecated
+    # cherrypy.engine.timeout_monitor.unsubscribe()
     cherrypy.tree.mount(WebInterface(), options['httpRoot'], config = webConf)
 
     # Load API endpoints
@@ -115,11 +117,11 @@ def initialize(options={}):
     cherrypy.engine.autoreload.subscribe()
 
     try:
-        cherrypy.process.servers.check_port(options['httpHost'], options['httpPort'])
+        portend.Checker().assert_free(options['httpHost'], options['httpPort'])
         cherrypy.server.start()
         #cherrypy.engine.start() is good for dev mode, but breaks --daemon
     except IOError:
-        print 'Failed to start on port: %i. Is something else running?' % (options['httpPort'])
+        print ('Failed to start on port: %i. Is something else running?' % (options['httpPort']))
         sys.exit(0)
 
     cherrypy.server.wait()

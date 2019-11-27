@@ -9,16 +9,16 @@ from __future__ import with_statement
 
 import os, sys, subprocess, threading, cherrypy, datetime, uuid
 
-from lib.configobj.configobj import ConfigObj
-from lib.apscheduler.schedulers.background import BackgroundScheduler
-from lib.apscheduler.triggers.interval import IntervalTrigger
-from lib.apscheduler.triggers.cron import CronTrigger
+from configobj import ConfigObj
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.cron import CronTrigger
 from cherrystrap import logger, formatter, versioncheck
 import orielpy
 from orielpy.generator import health
 from orielpy.jobs import logStatus
-from configCheck import CheckSection, check_setting_int, check_setting_bool, check_setting_str
-from initializeDb import createDb
+from cherrystrap.configCheck import CheckSection, check_setting_int, check_setting_bool, check_setting_str
+from cherrystrap.initializeDb import createDb
 
 FULL_PATH = None
 PROG_DIR = None
@@ -113,8 +113,8 @@ def initialize():
                 os.makedirs(LOGDIR)
             except OSError:
                 if LOGLEVEL:
-                    print LOGDIR + ":"
-                    print ' Unable to create folder for logs. Only logging to console.'
+                    print(LOGDIR + ":")
+                    print(' Unable to create folder for logs. Only logging to console.')
 
         # Start the logger, silence console logging if we need to
         logger.cherrystrap_log.initLogger(loglevel=LOGLEVEL)
@@ -137,7 +137,7 @@ def initialize():
                 logger.debug('Trying to execute: "' + cmd + '" with shell in ' + os.getcwd())
                 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=os.getcwd())
                 output, err = p.communicate()
-                output = output.strip()
+                output = output.decode('utf-8').strip()
                 logger.debug('Git output: ' + output)
             except OSError:
                 logger.debug('Command failed: %s', cmd)
@@ -203,7 +203,7 @@ def initialize():
         try:
             from orielpy import injectVarCheck
             injectVarCheck(CFG)
-        except Exception, e:
+        except (Exception, e):
             logger.debug("There was a problem importing application variable definitions: %s" % e)
         #================================================================
 
@@ -212,7 +212,7 @@ def initialize():
         try:
             createDb(DATABASE_TYPE, DATADIR, APP_NAME, MYSQL_HOST, MYSQL_PORT,
                 MYSQL_USER, MYSQL_PASS)
-        except Exception, e:
+        except (Exception, e):
             logger.error("Error initializing the database: %s" % e)
 
         # Disable SSL verification for systems where SSL is broken
@@ -221,7 +221,7 @@ def initialize():
                 import ssl
                 ssl._create_default_https_context = ssl._create_unverified_context
                 logger.info("SSL verification disabled per user preferences")
-            except Exception, e:
+            except (Exception, e):
                 logger.warn("There was an error disabling SSL verification: %s" % s)
                 pass
 
@@ -269,7 +269,7 @@ def daemonize():
         pid = os.fork() #@UndefinedVariable - only available in UNIX
         if pid != 0:
             sys.exit(0)
-    except OSError, e:
+    except (OSError, e):
         raise RuntimeError("1st fork failed: %s [%d]" % (e.strerror, e.errno))
 
     os.setsid() #@UndefinedVariable - only available in UNIX
@@ -283,7 +283,7 @@ def daemonize():
         pid = os.fork() #@UndefinedVariable - only available in UNIX
         if pid != 0:
             sys.exit(0)
-    except OSError, e:
+    except (OSError, e):
         raise RuntimeError("2st fork failed: %s [%d]" % (e.strerror, e.errno))
 
     dev_null = file('/dev/null', 'r')
@@ -306,7 +306,7 @@ def launch_browser(host, port, root):
     try:
         import webbrowser
         webbrowser.open('%s://%s:%i%s' % (protocol, host, port, root))
-    except Exception, e:
+    except (Exception, e):
         logger.error('Could not launch browser: %s' % e)
 
 def config_write():
@@ -355,7 +355,7 @@ def config_write():
     try:
         from orielpy import injectVarWrite
         injectVarWrite(new_config)
-    except Exception, e:
+    except (Exception, e):
         logger.debug("There was a problem importing application variables to write: %s" % e)
     #================================================================
 
@@ -390,7 +390,7 @@ def start():
                         MOY = cronList[3]
                         DOW = cronList[4]
                         healthNotify = CronTrigger(year=None, month=MOY, day=DOM, week=None, day_of_week=DOW, hour=hour, minute=minute, second=None, start_date=None, end_date=None, timezone=None)
-                    except Exception, e:
+                    except (Exception, e):
                         logger.error("Problem defining Notification Cronjob: %s" % e)
 
                 if healthNotify:
@@ -411,7 +411,7 @@ def start():
                         MOY = cronList[3]
                         DOW = cronList[4]
                         statusLogger = CronTrigger(year=None, month=MOY, day=DOM, week=None, day_of_week=DOW, hour=hour, minute=minute, second=None, start_date=None, end_date=None, timezone=None)
-                    except Exception, e:
+                    except (Exception, e):
                         logger.error("Problem defining Status Logging Cronjob: %s" % e)
 
                 if statusLogger:
@@ -421,7 +421,7 @@ def start():
             for job in SCHED.get_jobs():
                 logger.info("Job scheduled: %s" % job)
             scheduler_started = True
-        except Exception, e:
+        except (Exception, e):
             logger.error("Can't start scheduled job(s): %s" % e)
 
 def shutdown(restart=False, update=False):
@@ -430,7 +430,7 @@ def shutdown(restart=False, update=False):
 
     try:
         SCHED.shutdown(wait=True)
-    except Exception, e:
+    except (Exception, e):
         logger.error("Can't shutdown scheduler: %s" % e)
 
     if not restart and not update:
