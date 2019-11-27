@@ -91,7 +91,7 @@ class WebInterface(object):
         if logFile:
             try:
                 return serve_file(logFile, "application/x-download", "attachment")
-            except (Exception, e):
+            except Exception as e:
                 message['status'] = 'danger'
                 message['message'] = 'There was a problem downloading log file %s' % logFile
                 logger.error('There was a problem downloading log file %s: %s' % (logFile, e))

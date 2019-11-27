@@ -43,12 +43,12 @@ class TwitterNotifier:
         if resp['status'] != '200':
             logger.info('Invalid respond from Twitter requesting temp token: %s' % resp['status'])
         else:
-            request_token = dict(parse_qsl(content))
+            request_token = dict(parse_qsl(content.decode('UTF-8')))
 
-            orielpy.TWITTER_TOKEN = request_token['oauth_token']
-            orielpy.TWITTER_SECRET = request_token['oauth_token_secret']
+            orielpy.TWITTER_TOKEN = request_token.get('oauth_token')
+            orielpy.TWITTER_SECRET = request_token.get('oauth_token_secret')
 
-            return self.AUTHORIZATION_URL+"?oauth_token="+ request_token['oauth_token']
+            return self.AUTHORIZATION_URL+"?oauth_token="+ request_token.get('oauth_token')
 
     def _get_credentials(self, key):
         request_token = {}
@@ -57,7 +57,7 @@ class TwitterNotifier:
         request_token['oauth_token_secret'] = orielpy.TWITTER_SECRET
         request_token['oauth_callback_confirmed'] = 'true'
 
-        token = oauth.Token(request_token['oauth_token'], request_token['oauth_token_secret'])
+        token = oauth.Token(request_token.get('oauth_token'), request_token.get('oauth_token_secret'))
         token.set_verifier(key)
 
         logger.info('Generating and signing request for an access token using key '+key)
@@ -70,7 +70,7 @@ class TwitterNotifier:
         resp, content = oauth_client.request(self.ACCESS_TOKEN_URL, method='POST', body='oauth_verifier=%s' % key)
         logger.info('resp, content: '+str(resp)+','+str(content))
 
-        access_token  = dict(parse_qsl(content))
+        access_token  = dict(parse_qsl(content.decode('UTF-8')))
         logger.info('access_token: '+str(access_token))
 
         logger.info('resp[status] = '+str(resp['status']))
@@ -78,10 +78,10 @@ class TwitterNotifier:
             logger.error('The request for a token with did not succeed: '+str(resp['status']))
             return False
         else:
-            logger.info('Your Twitter Access Token key: %s' % access_token['oauth_token'])
-            logger.info('Access Token secret: %s' % access_token['oauth_token_secret'])
-            orielpy.TWITTER_TOKEN = access_token['oauth_token']
-            orielpy.TWITTER_SECRET = access_token['oauth_token_secret']
+            logger.info('Your Twitter Access Token key: %s' % access_token.get('oauth_token'))
+            logger.info('Access Token secret: %s' % access_token.get('oauth_token_secret'))
+            orielpy.TWITTER_TOKEN = access_token.get('oauth_token')
+            orielpy.TWITTER_SECRET = access_token.get('oauth_token_secret')
             return True
 
 
@@ -98,7 +98,7 @@ class TwitterNotifier:
 
         try:
             api.PostUpdate(message)
-        except (Exception, e):
+        except Exception as e:
             logger.error(u"Error Sending Tweet: %s" %e)
             return False
 

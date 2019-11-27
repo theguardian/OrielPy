@@ -19,7 +19,7 @@ class SQLite_DBConnection:
         try:
             global sqlite3
             import sqlite3
-        except (Exception, e):
+        except Exception as e:
             logger.error("There was an error importing SQLite: %s" % e)
         self.filename = filename
         self.connection = sqlite3.connect(dbFilename(filename), 20)
@@ -72,16 +72,17 @@ class SQLite_DBConnection:
     def upsert(self, tableName, valueDict, keyDict):
         changesBefore = self.connection.total_changes
 
-        genParams = lambda myDict : [x + " = ?" for x in myDict.keys()]
+        genParams = lambda myDict : [x + " = ?" for x in list(myDict.keys())]
 
         query = "UPDATE "+tableName+" SET " + ", ".join(genParams(valueDict)) + " WHERE " + " AND ".join(genParams(keyDict))
 
-        self.action(query, valueDict.values() + keyDict.values())
+        self.action(query, list(valueDict.values()) + list(keyDict.values()))
 
         if self.connection.total_changes == changesBefore:
-            query = "INSERT INTO "+tableName+" (" + ", ".join(valueDict.keys() + keyDict.keys()) + ")" + \
-                        " VALUES (" + ", ".join(["?"] * len(valueDict.keys() + keyDict.keys())) + ")"
-            self.action(query, valueDict.values() + keyDict.values())
+            query = "INSERT INTO "+tableName+" (" + ", ".join(list(valueDict.keys()) + list(keyDict.keys())) + ")" + \
+                        " VALUES (" + ", ".join(["?"] * len(list(valueDict.keys()) + list(keyDict.keys()))) + ")"
+
+            self.action(query, list(valueDict.values()) + list(keyDict.values()))
 
 class MySQL_DBConnection:
 
@@ -144,15 +145,15 @@ class MySQL_DBConnection:
 
     def upsert(self, tableName, valueDict, keyDict):
 
-        genParams = lambda myDict : [x + " = %s" for x in myDict.keys()]
+        genParams = lambda myDict : [x + " = %s" for x in list(myDict.keys())]
 
         entry_query = "SELECT * FROM "+tableName+" WHERE " + " AND ".join(genParams(keyDict))
-        entry_count = self.action(entry_query, keyDict.values()).rowcount
+        entry_count = self.action(entry_query, list(keyDict.values())).rowcount
 
         if entry_count != 0:
             query = "UPDATE "+tableName+" SET " + ", ".join(genParams(valueDict)) + " WHERE " + " AND ".join(genParams(keyDict))
-            self.action(query, valueDict.values() + keyDict.values())
+            self.action(query, list(valueDict.values()) + list(keyDict.values()))
         else:
-            query = "INSERT INTO "+tableName+" (" + ", ".join(valueDict.keys() + keyDict.keys()) + ")" + \
-                        " VALUES (" + ", ".join(["%s"] * len(valueDict.keys() + keyDict.keys())) + ")"
-            self.action(query, valueDict.values() + keyDict.values())
+            query = "INSERT INTO "+tableName+" (" + ", ".join(list(valueDict.keys()) + list(keyDict.keys())) + ")" + \
+                        " VALUES (" + ", ".join(["%s"] * len(list(valueDict.keys()) + list(keyDict.keys()))) + ")"
+            self.action(query, list(valueDict.values()) + list(keyDict.values()))
