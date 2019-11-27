@@ -286,7 +286,7 @@ def daemonize():
     except OSError as e:
         raise RuntimeError("2st fork failed: %s [%d]" % (e.strerror, e.errno))
 
-    dev_null = file('/dev/null', 'r')
+    dev_null = open('/dev/null', 'r')
     os.dup2(dev_null.fileno(), sys.stdin.fileno())
 
     if PIDFILE:
