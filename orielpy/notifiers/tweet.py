@@ -6,7 +6,7 @@ from orielpy import common
 
 # parse_qsl moved to urlparse module in v2.6
 try:
-    from urlparse import parse_qsl #@UnusedImport
+    from urllib.parse import parse_qsl #@UnusedImport
 except:
     from cgi import parse_qsl #@Reimport
 
