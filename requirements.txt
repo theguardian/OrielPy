@@ -7,7 +7,7 @@ oauth2
 oauthlib
 passlib
 portend
-#psutil
+psutil
 python-twitter
 pytz
 requests
