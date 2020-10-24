@@ -178,7 +178,7 @@ def initialize():
 
         HTTP_USER = check_setting_str(CFG, 'Interface', 'httpUser', '')
         HTTP_PASS = check_setting_str(CFG, 'Interface', 'httpPass', '')
-        HTTP_LOOK = check_setting_str(CFG, 'Interface', 'httpLook', 'bootstrap')
+        HTTP_LOOK = check_setting_str(CFG, 'Interface', 'httpLook', 'bootstrap3')
         API_TOKEN = check_setting_str(CFG, 'Interface', 'apiToken', uuid.uuid4().hex)
 
         DATABASE_TYPE = check_setting_str(CFG, 'Database', 'dbType', '')
