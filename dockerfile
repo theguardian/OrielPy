@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install python3.8 python3.8-dev python3.8-distutil
 LABEL maintainer="justin.evans@gmail.com"
 
 # Establish base directory on image
-RUN cd /srv
+WORKDIR /srv
 
 # Clone OrielPy
 RUN git clone https://github.com/theguardian/orielpy
