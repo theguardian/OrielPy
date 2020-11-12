@@ -424,6 +424,7 @@ class subroutines:
 
             partition_index = 0
             partition_list = []
+            partition_blacklist = ["overlay2", "plugins"]
             while partition_index < len(partition_import):
                 partition_array = {}
                 mountpoint_temp = re.search('mountpoint=(.+?), fstype', str(partition_import[partition_index]))
@@ -432,8 +433,9 @@ class subroutines:
                 filesystem_temp = re.search('fstype=(.+?), opts', str(partition_import[partition_index]))
                 if filesystem_temp:
                     filesystem = str(filesystem_temp.group(1))[1:-1]
-                partition_array['mountpoint'] = mountpoint
-                partition_array['filesystem'] = filesystem
+                if not any(x in mountpoint for x in partition_blacklist):
+                    partition_array['mountpoint'] = mountpoint
+                    partition_array['filesystem'] = filesystem
 
                 if (filesystem !="" and filesystem !="squashfs"):
                     disk_total_raw = psutil.disk_usage(mountpoint).total
