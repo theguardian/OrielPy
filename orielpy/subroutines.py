@@ -117,7 +117,7 @@ class subroutines:
             internal_disk_list = set(internal_disk_list)
             external_disk_list = set(external_disk_list)
 
-            # print internal_disk_list
+            logger.warn(internal_disk_list)
             # print external_disk_list
 
             num_internal_disks = len(internal_disk_list)
