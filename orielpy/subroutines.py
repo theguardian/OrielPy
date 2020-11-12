@@ -430,7 +430,7 @@ class subroutines:
                 volumeBlacklist = orielpy.VOLUME_BLACKLIST
             partition_blacklist_exploded = volumeBlacklist.split(',')
             partition_blacklist = [x.strip(' ') for x in partition_blacklist_exploded]
-            print(partition_blacklist)
+
             while partition_index < len(partition_import):
                 partition_array = {}
                 mountpoint_temp = re.search('mountpoint=(.+?), fstype', str(partition_import[partition_index]))
