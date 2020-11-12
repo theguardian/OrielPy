@@ -424,7 +424,7 @@ class subroutines:
 
             partition_index = 0
             partition_list = []
-            partition_blacklist = ["overlay2", "plugins"]
+            partition_blacklist = ["overlay2", "plugins", "/etc/resolv.conf", "/etc/hostname", "/etc/hosts"]
             while partition_index < len(partition_import):
                 partition_array = {}
                 mountpoint_temp = re.search('mountpoint=(.+?), fstype', str(partition_import[partition_index]))
@@ -433,9 +433,8 @@ class subroutines:
                 filesystem_temp = re.search('fstype=(.+?), opts', str(partition_import[partition_index]))
                 if filesystem_temp:
                     filesystem = str(filesystem_temp.group(1))[1:-1]
-                if not any(x in mountpoint for x in partition_blacklist):
-                    partition_array['mountpoint'] = mountpoint
-                    partition_array['filesystem'] = filesystem
+                partition_array['mountpoint'] = mountpoint
+                partition_array['filesystem'] = filesystem
 
                 if (filesystem !="" and filesystem !="squashfs"):
                     disk_total_raw = psutil.disk_usage(mountpoint).total
@@ -471,8 +470,8 @@ class subroutines:
                     disk_percent_raw = psutil.disk_usage(mountpoint).percent
                     disk_percent = str(int(disk_percent_raw))
                     partition_array['percent'] = disk_percent
-
-                    partition_list.append(partition_array)
+                    if not any(x in mountpoint for x in partition_blacklist):
+                        partition_list.append(partition_array)
                 partition_index +=1
 
             partition_list = sorted(partition_list, key=itemgetter('mountpoint'))
