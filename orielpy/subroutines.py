@@ -424,7 +424,13 @@ class subroutines:
 
             partition_index = 0
             partition_list = []
-            partition_blacklist = ["overlay2", "plugins", "/etc/resolv.conf", "/etc/hostname", "/etc/hosts"]
+            if orielpy.VOLUME_BLACKLIST.startswith('"') and orielpy.VOLUME_BLACKLIST.endswith('"'):
+                volumeBlacklist = orielpy.VOLUME_BLACKLIST[1:-1]
+            else:
+                volumeBlacklist = orielpy.VOLUME_BLACKLIST
+            partition_blacklist_exploded = volumeBlacklist.split(',')
+            partition_blacklist = [x.strip(' ') for x in partition_blacklist_exploded]
+            print(partition_blacklist)
             while partition_index < len(partition_import):
                 partition_array = {}
                 mountpoint_temp = re.search('mountpoint=(.+?), fstype', str(partition_import[partition_index]))
