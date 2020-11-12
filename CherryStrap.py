@@ -76,7 +76,7 @@ def main():
     if options.datadir:
         cherrystrap.DATADIR = str(options.datadir)
     else:
-        cherrystrap.DATADIR = cherrystrap.PROG_DIR
+        cherrystrap.DATADIR = os.path.join(cherrystrap.PROG_DIR, "data")
 
     if options.config:
         cherrystrap.CONFIGFILE = str(options.config)

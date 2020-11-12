@@ -1,12 +1,7 @@
 #  User Related   #
 ######################
-cache/*
-*.db
-*.lock
-config.ini
+data/*
 static/images/server.png
-Logs/*
-keys/*
 
 #  Compiled source   #
 ######################

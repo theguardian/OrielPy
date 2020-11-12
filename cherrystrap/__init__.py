@@ -105,7 +105,7 @@ def initialize():
         LOGDIR = check_setting_str(CFG, 'Server', 'logDir', '')
 
         if not LOGDIR:
-            LOGDIR = os.path.join(DATADIR, 'Logs')
+            LOGDIR = os.path.join(DATADIR, 'logs')
 
         # Create logdir
         if not os.path.exists(LOGDIR):
