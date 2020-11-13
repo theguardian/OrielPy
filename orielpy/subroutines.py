@@ -84,8 +84,10 @@ class subroutines:
                         check_place = alphabet[check_value]
                     except:
                         check_place = 999
+                elif("sd" in value and len(value)!=4):
+                    check_place = 999
                 elif any(x in value for x in disk_blacklist):
-                    check_value = 999
+                    check_place = 999
                 else:
                     check_place = 0
 
