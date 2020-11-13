@@ -70,6 +70,13 @@ class subroutines:
             for index, letter in enumerate(string.ascii_lowercase):
                 alphabet[letter] = index + 1
 
+            if orielpy.DISK_BLACKLIST.startswith('"') and orielpy.DISK_BLACKLIST.endswith('"'):
+                diskBlacklist = orielpy.DISK_BLACKLIST[1:-1]
+            else:
+                diskBlacklist = orielpy.DISK_BLACKLIST
+            disk_blacklist_exploded = diskBlacklist.split(',')
+            disk_blacklist = [x.strip(' ') for x in disk_blacklist_exploded]
+
             for value in disk_partition_list:
                 if ("sd" in value and len(value)==4):
                     check_value = str(value)[2]
@@ -77,18 +84,11 @@ class subroutines:
                         check_place = alphabet[check_value]
                     except:
                         check_place = 999
-                elif ("sd" in value and len(value)<4):
-                    check_place = 999
-                elif "ram" in value:
-                    check_place = 999
-                elif value == "mmcblk0":
-                    check_place = 999
-                elif "md" in value:
-                    check_place = 999
-                elif "loop" in value:
-                    check_place = 999
+                elif any(x in value for x in disk_blacklist):
+                    check_value = 999
                 else:
                     check_place = 0
+
                 if check_place <= orielpy.NUM_INTERNAL_DISK_CAPACITY:
                     internal_list.append(value)
                 elif check_place == 24:

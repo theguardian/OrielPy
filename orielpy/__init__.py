@@ -21,6 +21,7 @@ NIC_WRITE_MAX = 0
 INTERNAL_DISK_MAX_RATE = 0
 EXTERNAL_DISK_MAX_RATE = 0
 VOLUME_BLACKLIST = None
+DISK_BLACKLIST = None
 
 NOTIFICATION_TYPE = None
 NOTIFICATION_FREQUENCY = 0
@@ -44,7 +45,7 @@ def injectVarCheck(CFG):
     SYS_FAN_FILE, SYS_FAN_MIN, SYS_FAN_MAX, CPU_FAN_FILE, CPU_FAN_MIN, \
     CPU_FAN_MAX, CPU_TEMP_FILE, CPU_TEMP_MIN, CPU_TEMP_MAX, SYS_TEMP_FILE, \
     SYS_TEMP_MIN, SYS_TEMP_MAX, NIC_READ_MAX, NIC_WRITE_MAX, \
-    INTERNAL_DISK_MAX_RATE, EXTERNAL_DISK_MAX_RATE, VOLUME_BLACKLIST, \
+    INTERNAL_DISK_MAX_RATE, EXTERNAL_DISK_MAX_RATE, VOLUME_BLACKLIST, DISK_BLACKLIST, \
     NOTIFICATION_TYPE, NOTIFICATION_FREQUENCY, NOTIFICATION_UNITS, \
     NOTIFICATION_CRON, NOTIFY_NOMINAL, \
     LOGGER_TYPE, LOGGER_FREQUENCY, LOGGER_UNITS, LOGGER_CRON, \
@@ -74,6 +75,7 @@ def injectVarCheck(CFG):
     INTERNAL_DISK_MAX_RATE = check_setting_int(CFG, 'System', 'intDiskMaxRate', 200)
     EXTERNAL_DISK_MAX_RATE = check_setting_int(CFG, 'System', 'extDiskMaxRate', 200)
     VOLUME_BLACKLIST = check_setting_str(CFG, 'System', 'volumeBlacklist', '/etc/hostname, /etc/hosts, /etc/resolv.conf')
+    DISK_BLACKLIST = check_setting_str(CFG, 'System', 'diskBlacklist', 'ram, blk, md, loop, dm, fb, bd')
 
     NOTIFICATION_TYPE = check_setting_str(CFG, 'Notifications', 'notificationType', 'disabled')
     NOTIFICATION_FREQUENCY = check_setting_int(CFG, 'Notifications', 'notificationFrequency', 0)
@@ -132,7 +134,8 @@ def injectApiConfigGet():
             "nicWriteMax": NIC_WRITE_MAX,
             "intDiskMaxRate": INTERNAL_DISK_MAX_RATE,
             "extDiskMaxRate": EXTERNAL_DISK_MAX_RATE,
-            "volumeBlacklist": VOLUME_BLACKLIST
+            "volumeBlacklist": VOLUME_BLACKLIST,
+            "diskBlacklist": DISK_BLACKLIST
         },
         "notifications": {
             "notificationType": NOTIFICATION_TYPE,
@@ -160,7 +163,7 @@ def injectApiConfigPut(kwargs, errorList):
     SYS_FAN_FILE, SYS_FAN_MIN, SYS_FAN_MAX, CPU_FAN_FILE, CPU_FAN_MIN, \
     CPU_FAN_MAX, CPU_TEMP_FILE, CPU_TEMP_MIN, CPU_TEMP_MAX, SYS_TEMP_FILE, \
     SYS_TEMP_MIN, SYS_TEMP_MAX, NIC_READ_MAX, NIC_WRITE_MAX, \
-    INTERNAL_DISK_MAX_RATE, EXTERNAL_DISK_MAX_RATE, VOLUME_BLACKLIST, \
+    INTERNAL_DISK_MAX_RATE, EXTERNAL_DISK_MAX_RATE, VOLUME_BLACKLIST, DISK_BLACKLIST, \
     NOTIFICATION_TYPE, NOTIFICATION_FREQUENCY, NOTIFICATION_UNITS, \
     NOTIFICATION_CRON, NOTIFY_NOMINAL, \
     LOGGER_TYPE, LOGGER_FREQUENCY, LOGGER_UNITS, LOGGER_CRON, \
@@ -271,6 +274,8 @@ def injectApiConfigPut(kwargs, errorList):
             kwargs.pop('extDiskMaxRate', 200)
     if 'volumeBlacklist' in kwargs:
         VOLUME_BLACKLIST = kwargs.pop('volumeBlacklist', '/etc/hostname, /etc/hosts, /etc/resolv.conf')
+    if 'diskBlacklist' in kwargs:
+        DISK_BLACKLIST = kwargs.pop('diskBlacklist', 'ram, blk, md, loop, dm, fb, bd')
     if 'notificationType' in kwargs:
         NOTIFICATION_TYPE = kwargs.pop('notificationType', 'disabled')
     if 'notificationFrequency' in kwargs:
@@ -338,6 +343,7 @@ def injectVarWrite(new_config):
     new_config['System']['intDiskMaxRate'] = INTERNAL_DISK_MAX_RATE
     new_config['System']['extDiskMaxRate'] = EXTERNAL_DISK_MAX_RATE
     new_config['System']['volumeBlacklist'] = VOLUME_BLACKLIST
+    new_config['System']['diskBlacklist'] = DISK_BLACKLIST
 
     new_config['Notifications'] = {}
     new_config['Notifications']['notificationType'] = NOTIFICATION_TYPE
