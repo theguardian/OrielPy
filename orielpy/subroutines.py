@@ -117,7 +117,9 @@ class subroutines:
             internal_disk_list = set(internal_disk_list)
             external_disk_list = set(external_disk_list)
 
-            logger.error(internal_disk_list)
+            list_of_strings = [str(s) for s in internal_disk_list]
+            joined_string = " ".join(list_of_strings)
+            logger.warn("%s" % joined_string)
             # print external_disk_list
 
             num_internal_disks = len(internal_disk_list)
